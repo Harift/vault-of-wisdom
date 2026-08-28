@@ -43,6 +43,16 @@ const STAGES = {
 
 let currentRound = 1;
 
+// INITIALIZE STAGE 1 ON BOOT
+function initGame() {
+  const stageData = STAGES[1];
+  document.body.setAttribute("data-theme", stageData.theme);
+  document.getElementById("stage-indicator").innerText = `ROUND 1 / 4`;
+  document.getElementById("stage-title").innerText = stageData.title;
+  document.getElementById("puzzle-question").innerText = stageData.question;
+  document.getElementById("dialogue-box").innerText = stageData.dialogue;
+}
+
 function advanceToRound(nextRound) {
   if (nextRound > 4) {
     document.getElementById("dialogue-box").innerText = '"ALL FRAGMENTS DECRYPTED! Full Hidden Message: THE VAULT HOLDS THE FINAL KEY TO FREEDOM."';
@@ -84,9 +94,12 @@ function processHardwareInput(inputVal) {
   }
 }
 
-// Dev Testing Key (Press 'N' key on keyboard to simulate passing a round)
-window.addEventListener("keydown", (e) => {
+// LISTEN FOR KEYBOARD EVENTS
+document.addEventListener("keydown", (e) => {
   if (e.key === "n" || e.key === "N") {
     processHardwareInput(STAGES[currentRound].answer);
   }
 });
+
+// RUN INITIALIZATION WHEN PAGE LOADS
+window.addEventListener("DOMContentLoaded", initGame);
