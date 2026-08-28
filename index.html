@@ -3,14 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Vault of Wisdom - Terminal</title>
+  <title>Vault of Wisdom - Cyberpunk Terminal</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body data-theme="round1">
 
-  <!-- FULLSCREEN PORTAL OVERLAY -->
+  <!-- DIMENSIONAL PORTAL OVERLAY -->
   <div id="portal-overlay">
-    <div class="vortex-ring"></div>
     <div class="vortex-ring"></div>
     <div class="vortex-ring"></div>
     <div class="vortex-ring"></div>
@@ -23,7 +22,6 @@
     <!-- TOP STATUS BAR -->
     <header class="terminal-card status-bar">
       <div><strong>HARDWARE:</strong> <span id="hardware-status" style="color: #ff4444;">● DISCONNECTED</span></div>
-      <button id="connect-btn" style="background: var(--accent-main); color: #000; border: none; padding: 6px 14px; font-weight: bold; border-radius: 4px; cursor: pointer;">CONNECT ESP32</button>
       <div><strong>SYSTEM TIME:</strong> <span id="timer" class="accent-text">15:00</span></div>
       <div><strong>DIMENSION:</strong> <span id="stage-indicator" class="accent-text">ROUND 1 / 4</span></div>
     </header>
@@ -32,12 +30,10 @@
     <main class="game-grid">
       
       <!-- LEFT: Avatar & Dialogue -->
-      <aside class="terminal-card avatar-panel">
+      <aside class="terminal-card avatar-panel slide-in-avatar" id="avatar-card">
         <div id="avatar-container">
           <svg width="100" height="100" viewBox="0 0 100 100" fill="none">
-            <circle cx="50" cy="50" r="45" stroke="var(--accent-main)" stroke-width="2" stroke-dasharray="4 2">
-              <animateTransform attributeName="transform" type="rotate" from="0 50 50" to="360 50 50" dur="10s" repeatCount="indefinite"/>
-            </circle>
+            <circle class="spinning-ring" cx="50" cy="50" r="45" stroke="var(--accent-main)" stroke-width="2" stroke-dasharray="4 2"/>
             <polygon points="50,15 75,30 75,65 50,85 25,65 25,30" fill="rgba(0, 243, 255, 0.1)" stroke="var(--accent-main)" stroke-width="2"/>
             <rect x="35" y="42" width="30" height="6" rx="3" fill="var(--accent-main)"/>
           </svg>
@@ -45,13 +41,32 @@
         <h3 class="accent-text">A.R.I.A.</h3>
         <p class="subtext">Vault Security Interface</p>
         <hr class="divider">
-        <div id="dialogue-box">Initializing hardware stream... Stand by for Round 1 parameters.</div>
+        <div id="dialogue-box">TAP THE CHEST TO OPEN 🏴‍☠️</div>
       </aside>
 
-      <!-- RIGHT: Active Puzzle & Hidden Message Tracker -->
+      <!-- RIGHT: Active Puzzle, Chest Trigger, Clues & Buffer -->
       <section class="terminal-card puzzle-panel">
-        <h2 id="stage-title" class="accent-text">STAGE 1: KEYPAD NUMERIC LOCK</h2>
-        <p id="puzzle-question">Calculate Voltage (V) when Current I = 5A and Resistance R = 12 Ohms.</p>
+        
+        <!-- INTERACTIVE VAULT CHEST -->
+        <div class="chest-wrapper">
+          <div class="vault-door" id="vault-door">
+            <div class="door-panel door-left" id="door-left"></div>
+            <div class="door-panel door-right" id="door-right"></div>
+            <div class="vault-lock-core" id="lock-core">TAP TO UNLOCK 🏴‍☠️</div>
+          </div>
+        </div>
+
+        <h2 id="stage-title" class="accent-text">SYSTEM STANDBY</h2>
+        <p id="puzzle-question">Connect hardware to initiate security protocols.</p>
+
+        <!-- CLUE / ADVICE PANEL -->
+        <div class="advice-card">
+          <div class="advice-header">
+            <span class="advice-title">💡 ARIA'S HELP DESK</span>
+            <button id="clue-btn" disabled>Request Clue</button>
+          </div>
+          <p id="advice-text">Stuck on this stage? Click 💡 Request Clue if you need Aria's help!</p>
+        </div>
 
         <!-- Live Serial Buffer Display -->
         <div class="input-display">
