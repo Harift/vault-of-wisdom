@@ -22,7 +22,8 @@
     
     <!-- TOP STATUS BAR -->
     <header class="terminal-card status-bar">
-      <div><strong>HARDWARE:</strong> <span id="hardware-status" class="status-online">● ONLINE</span></div>
+      <div><strong>HARDWARE:</strong> <span id="hardware-status" style="color: #ff4444;">● DISCONNECTED</span></div>
+      <button id="connect-btn" style="background: var(--accent-main); color: #000; border: none; padding: 6px 14px; font-weight: bold; border-radius: 4px; cursor: pointer;">CONNECT ESP32</button>
       <div><strong>SYSTEM TIME:</strong> <span id="timer" class="accent-text">15:00</span></div>
       <div><strong>DIMENSION:</strong> <span id="stage-indicator" class="accent-text">ROUND 1 / 4</span></div>
     </header>
