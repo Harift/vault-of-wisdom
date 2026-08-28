@@ -43,7 +43,6 @@ const STAGES = {
 
 let currentRound = 1;
 
-// INITIALIZE STAGE 1 ON BOOT
 function initGame() {
   const stageData = STAGES[1];
   document.body.setAttribute("data-theme", stageData.theme);
@@ -94,12 +93,62 @@ function processHardwareInput(inputVal) {
   }
 }
 
-// LISTEN FOR KEYBOARD EVENTS
+// Dev bypass: Press 'N' to advance
 document.addEventListener("keydown", (e) => {
   if (e.key === "n" || e.key === "N") {
     processHardwareInput(STAGES[currentRound].answer);
   }
 });
 
-// RUN INITIALIZATION WHEN PAGE LOADS
+// WEB SERIAL API INTEGRATION
+let port;
+let reader;
+
+document.getElementById("connect-btn").addEventListener("click", async () => {
+  if ("serial" in navigator) {
+    try {
+      port = await navigator.serial.requestPort();
+      await port.open({ baudRate: 9600 });
+      
+      document.getElementById("hardware-status").innerText = "● ONLINE";
+      document.getElementById("hardware-status").style.color = "#00ff66";
+      document.getElementById("connect-btn").style.display = "none";
+
+      readSerialData();
+    } catch (err) {
+      console.error("Serial connection failed:", err);
+    }
+  } else {
+    alert("Web Serial API is not supported in this browser. Please use Google Chrome or Microsoft Edge.");
+  }
+});
+
+async function readSerialData() {
+  const textDecoder = new TextDecoderStream();
+  const readableStreamClosed = port.readable.pipeTo(textDecoder.writable);
+  reader = textDecoder.readable.getReader();
+
+  let lineBuffer = "";
+
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) {
+      reader.releaseLock();
+      break;
+    }
+    if (value) {
+      lineBuffer += value;
+      let lines = lineBuffer.split("\n");
+      lineBuffer = lines.pop();
+
+      for (let line of lines) {
+        let cleanInput = line.trim();
+        if (cleanInput.length > 0) {
+          processHardwareInput(cleanInput);
+        }
+      }
+    }
+  }
+}
+
 window.addEventListener("DOMContentLoaded", initGame);
