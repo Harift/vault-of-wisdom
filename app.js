@@ -3,6 +3,9 @@ let currentRound = 1;
 let currentPuzzle = {};
 let currentAnswerBuffer = "";
 
+// Track continuous 7-second hold for Stage 4 Ultrasonic distance
+let distHoldStart = null;
+
 // 250 ADVICE DATABASE
 const ADVICE_DATABASE = [
   "Anxiety is paying interest on a debt you may never owe.",
@@ -86,7 +89,7 @@ const ADVICE_DATABASE = [
   "Keep your balance between theory and application.",
   "Challenge your assumptions daily.",
   "A clear mind leads to clean execution.",
-  " do not fear failure; fear standing still.",
+  "Do not fear failure; fear standing still.",
   "The best way to predict the future is to create it.",
   "One good habit can anchor a dozen others.",
   "Perfection is achieved not when there is nothing more to add, but when nothing left to take away.",
@@ -273,7 +276,7 @@ function getRandomAdvice() {
   return ADVICE_DATABASE[Math.floor(Math.random() * ADVICE_DATABASE.length)];
 }
 
-// STAGE PUZZLE GENERATORS (Clues only give formulas!)
+// PUZZLE GENERATORS (Formula-only clues)
 function generateRound1Puzzle() {
   const i = Math.floor(Math.random() * 5) + 2;
   const r = Math.floor(Math.random() * 8) + 5;
@@ -288,14 +291,14 @@ function generateRound1Puzzle() {
 }
 
 function generateRound2Puzzle() {
-  const mult = Math.floor(Math.random() * 3) + 2; // 2 to 4
-  const base = Math.floor(Math.random() * 3) + 1; // 1 to 3
+  const mult = Math.floor(Math.random() * 3) + 2;
+  const base = Math.floor(Math.random() * 3) + 1;
   const targetSec = mult + base;
   
   return {
     title: "STAGE 2: TOUCH TIMING EQUATION",
     question: `Solve for X (seconds): X = (${mult * 2} / 2) + ${base}. Hold or tap the sensor for exactly X seconds!`,
-    dialogue: `Solve the equation to find hold duration X in seconds. Hold the touch sensor for exactly X seconds!`,
+    dialogue: `Solve the equation to find hold duration X in seconds. Press and hold the touch sensor for exactly X seconds!`,
     targetHoldMs: targetSec * 1000,
     targetSec: targetSec,
     clue: "Formula: X = (A / 2) + B. Evaluate division inside parentheses first, then add the constant B.",
@@ -323,21 +326,21 @@ function generateRound4Puzzle() {
     const maxIn = 6;
     minCm = Math.round(minIn * 2.54);
     maxCm = Math.round(maxIn * 2.54);
-    questionText = `Target Distance Range: Between ${minIn} inches and ${maxIn} inches. Convert to cm and position your hand!`;
+    questionText = `Target Distance Range: Between ${minIn} inches and ${maxIn} inches. Convert to cm and hold your hand steady for 7 seconds!`;
     clueText = "Formula: Distance in Centimeters (cm) = Distance in Inches (in) × 2.54";
   } else {
     const minDm = 1;
     const maxDm = 1.5;
     minCm = Math.round(minDm * 10);
     maxCm = Math.round(maxDm * 10);
-    questionText = `Target Distance Range: Between ${minDm} dm and ${maxDm} dm. Convert to cm and position your hand!`;
+    questionText = `Target Distance Range: Between ${minDm} dm and ${maxDm} dm. Convert to cm and hold your hand steady for 7 seconds!`,
     clueText = "Formula: Distance in Centimeters (cm) = Distance in Decimeters (dm) × 10";
   }
 
   return {
-    title: "STAGE 4: ULTRASONIC CONVERSION",
+    title: "STAGE 4: ULTRASONIC CONVERSION (7s HOLD)",
     question: questionText,
-    dialogue: "Convert measurement to centimeters, then position your hand in front of the ultrasonic sensor!",
+    dialogue: "Convert measurement to cm, then hold your hand at that distance continuously for 7 seconds!",
     minDist: minCm,
     maxDist: maxCm,
     clue: clueText,
@@ -375,7 +378,6 @@ function clearInput() {
   sendStageToHardware(currentRound);
 }
 
-// TREASURE CHEST DISPLAY (Random advice on click)
 function showTreasureClearance() {
   const modal = document.getElementById("treasure-modal");
   const chest = document.getElementById("treasure-chest");
@@ -396,7 +398,6 @@ function showTreasureClearance() {
 
   chest.onclick = () => {
     if (!chest.classList.contains("open")) {
-      // Pick random advice from 250 database array
       if (wisdomQuote) {
         wisdomQuote.innerText = `"${getRandomAdvice()}"`;
       }
@@ -417,7 +418,6 @@ function showTreasureClearance() {
   };
 }
 
-// PORTAL TRANSITION ANIMATION BETWEEN STAGES
 function triggerPortalTransition(nextStage) {
   let portalOverlay = document.getElementById("portal-transition-overlay");
   
@@ -428,7 +428,6 @@ function triggerPortalTransition(nextStage) {
     document.body.appendChild(portalOverlay);
   }
 
-  // Trigger warp animation
   portalOverlay.classList.add("active");
 
   setTimeout(() => {
@@ -448,17 +447,25 @@ function triggerPortalTransition(nextStage) {
 
 function loadStage(stageNum) {
   currentRound = stageNum;
+  distHoldStart = null;
+
   if (stageNum === 1) currentPuzzle = generateRound1Puzzle();
   if (stageNum === 2) currentPuzzle = generateRound2Puzzle();
   if (stageNum === 3) currentPuzzle = generateRound3Puzzle();
   if (stageNum === 4) currentPuzzle = generateRound4Puzzle();
 
+  // Dynamic Round Theme Switch
   document.body.setAttribute("data-theme", `round${stageNum}`);
   document.getElementById("stage-indicator").innerText = `STAGE: ROUND ${stageNum} / 4`;
   document.getElementById("stage-title").innerText = currentPuzzle.title;
   document.getElementById("puzzle-question").innerText = currentPuzzle.question;
   document.getElementById("dialogue-box").innerText = currentPuzzle.dialogue;
   document.getElementById("clue-text").innerText = "Stuck on this stage? Click Request Clue to see formula guidance!";
+
+  // Reset telemetry display for non-stage 4
+  if (stageNum !== 4) {
+    document.getElementById("live-input").innerText = "_";
+  }
 
   sendStageToHardware(stageNum);
   updateInputUI("");
@@ -491,17 +498,21 @@ function checkAnswer() {
 
 function evaluateHardwareData(telemetry) {
   let cleanData = telemetry.replace(/[^\x20-\x7E]/g, '').trim();
-  document.getElementById("live-input").innerText = cleanData;
 
+  // STAGE 1 & 3: Keypad
   if (currentRound === 1 || currentRound === 3) {
     if (cleanData.includes("KEY:")) {
       let val = cleanData.substring(cleanData.indexOf("KEY:") + 4).trim();
+      document.getElementById("live-input").innerText = val;
       updateInputUI(val);
       checkAnswer();
     }
-  } else if (currentRound === 2) {
+  } 
+  // STAGE 2: Touch Duration Equation
+  else if (currentRound === 2) {
     if (cleanData.includes("TOUCH_DURATION:")) {
       let dur = parseInt(cleanData.substring(cleanData.indexOf("TOUCH_DURATION:") + 15).trim());
+      document.getElementById("live-input").innerText = `${(dur/1000).toFixed(1)}s`;
       if (Math.abs(dur - currentPuzzle.targetHoldMs) <= 900) {
         document.getElementById("frag-2").innerText = currentPuzzle.fragment;
         triggerPortalTransition(3);
@@ -512,12 +523,32 @@ function evaluateHardwareData(telemetry) {
         setTimeout(() => { sendStageToHardware(2); }, 1500);
       }
     }
-  } else if (currentRound === 4) {
+  } 
+  // STAGE 4: Ultrasonic Sensor (Distance strictly tracked here & 7 seconds hold enforced)
+  else if (currentRound === 4) {
     if (cleanData.includes("DIST:")) {
       let dist = parseInt(cleanData.substring(cleanData.indexOf("DIST:") + 5).trim());
+      document.getElementById("live-input").innerText = `${dist} cm`;
+
+      // Check target range requirement
       if (dist >= currentPuzzle.minDist && dist <= currentPuzzle.maxDist) {
-        document.getElementById("frag-4").innerText = currentPuzzle.fragment;
-        triggerPortalTransition(5);
+        if (!distHoldStart) {
+          distHoldStart = Date.now();
+        }
+        
+        let heldSec = Math.floor((Date.now() - distHoldStart) / 1000);
+        document.getElementById("dialogue-box").innerText = `🎯 Hand in target range (${dist}cm)! Hold steady: ${heldSec} / 7 seconds...`;
+        sendLCDText("TARGET ACQUIRED", `HOLD: ${heldSec}/7 SEC`);
+
+        if (Date.now() - distHoldStart >= 7000) {
+          document.getElementById("frag-4").innerText = currentPuzzle.fragment;
+          triggerPortalTransition(5);
+        }
+      } else {
+        // Reset timer if hand moves out of range
+        distHoldStart = null;
+        document.getElementById("dialogue-box").innerText = `⚠️ Out of range (${dist}cm). Keep hand between ${currentPuzzle.minDist}cm and ${currentPuzzle.maxDist}cm!`;
+        sendLCDText("OUT OF RANGE!", "TARGET: " + currentPuzzle.minDist + "-" + currentPuzzle.maxDist + "cm");
       }
     }
   }
@@ -558,6 +589,15 @@ async function connectSerial() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  // Handle Opening Black-Themed Sequence
+  const introModal = document.getElementById("intro-modal");
+  const startVaultBtn = document.getElementById("start-vault-btn");
+  if (startVaultBtn && introModal) {
+    startVaultBtn.addEventListener("click", () => {
+      introModal.classList.add("hidden");
+    });
+  }
+
   document.getElementById("connect-btn").addEventListener("click", connectSerial);
   document.getElementById("check-btn").addEventListener("click", checkAnswer);
   document.getElementById("clear-btn").addEventListener("click", clearInput);
