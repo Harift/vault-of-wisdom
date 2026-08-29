@@ -1,122 +1,221 @@
 const ARIA_SCRIPT = {
   boot: "TAP THE CHEST TO OPEN 🏴‍☠️",
-  intro: "Whoa, whoa, hold your horses! You didn't think opening the ancient Vault of Knowledge would be that easy, did you? I’m Aria, guardian of what's inside. If you want this treasure, you've got to prove your worth across four hardware trials. Connect your USB device, and let's see what you've got!",
+  intro: "Whoa, whoa, hold your horses! You didn't think opening the ancient Vault of Knowledge would be that easy, did you? I’m Aria, guardian of what's inside. Connect your USB device, and let's see what you've got!",
   connected: "Signal locked and hardware initialized! Let's see if that brain of yours is running at full clock speed.",
-  failedConnect: "Connection dropped! I can't test your skills if your hardware isn't linked. Tap the chest and select your USB port!",
+  failedConnect: "Connection dropped! Tap the chest and select your USB port!",
   mockery: {
     wrongKeypad: "Wait... did you punch that in with your eyes closed? Try calculating that again, genius!",
     guessing: "Ah, I see we're just pressing random numbers now. Bold strategy! Wrong, but bold.",
     touchFail: "My clock module measured that timing and almost fell asleep. Give me clean, deliberate taps!",
-    wobble: "Whoa, shaky hands! Are you calibrating a sensor or waving goodbye? Keep your palm frozen!",
-    stage4Fail: "Ouch! Stumbling right on the finish line? Take a deep breath, steady your hand, and try again!"
+    stage4Fail: "Ouch! Stumbling right on the finish line? Steady your hand and try again!"
   },
   idle: {
     1: "The vault's security protocols aren't getting any younger! You still figuring out the math over there?",
     2: "The touch sensor module is right in front of you. Don't be shy, give it a tap!",
     3: "Logic evaluation twisting your brain? Punch your answer into the keypad and hit #!",
-    4: "Are you measuring the distance with a ruler? Hover your hand at 15cm and let's move!"
+    4: "Hover your palm steady at the target range and let's move!"
   },
-  victory: "Unbelievable! Calculated with absolute precision! You shattered all four heavy chains and unlocked the chest! You've earned every bit of this... here is the secret wisdom stored inside:"
+  victory: "Unbelievable! Calculated with absolute precision! You shattered all four heavy chains and unlocked the chest! Here is the secret wisdom stored inside:"
 };
 
-const STAGES = {
-  1: {
-    theme: "round1",
-    color: "#00F3FF",
-    title: "STAGE 1: KEYPAD ENTRY",
-    question: "Calculate Voltage (V) when Current I = 5A and Resistance R = 12 Ohms.",
-    dialogue: "Stage 1 is live! Punch your calculated answer into the physical keypad followed by # to lock it in!",
-    clue: "Stuck on the math? Use Ohm's Law: V = I × R (5 × 12 = 60). Key in '60' and press '#'.",
-    answer: "60",
-    fragment: "FRAG_1: 'THE VAULT'"
-  },
-  2: {
-    theme: "round2",
-    color: "#00FF66",
-    title: "STAGE 2: TOUCH SENSOR TIMING",
-    question: "Tap the physical TTP223 touch sensor module to send the signal.",
-    dialogue: "Look at you, passing stage one like a natural! But don't get arrogant just yet... tap out the pattern on your TTP223 touch sensor!",
-    clue: "Losing the rhythm? Press your finger cleanly against the TTP223 capacitive touch pad attached to GPIO 04.",
-    answer: "TOUCH_3",
-    fragment: "FRAG_2: 'HOLDS THE'"
-  },
-  3: {
-    theme: "round3",
-    color: "#A855F7",
-    title: "STAGE 3: DIGITAL LOGIC EVALUATION",
-    question: "Evaluate Boolean Statement: (TRUE AND FALSE) OR (NOT FALSE). Press 1 for True or 0 for False, then hit #.",
-    dialogue: "Fast fingers, decent reflexes... not bad! Time to test your boolean logic. Evaluate the circuit condition and submit via keypad!",
-    clue: "Logic twisting your brain? (TRUE AND FALSE) = 0. (NOT FALSE) = 1. So 0 OR 1 = 1. Punch '1' and hit '#'.",
-    answer: "1",
-    fragment: "FRAG_3: 'FINAL KEY'"
-  },
-  4: {
-    theme: "round4",
-    color: "#FFB800",
-    title: "STAGE 4: ULTRASONIC DISTANCE LOCK",
-    question: "Maintain physical hand distance at 15 cm from HC-SR04 (Target Range: 14-16 cm).",
-    dialogue: "Impressive! You're standing right at the final magical barrier. Hover your palm steady at 15cm for 2 full seconds!",
-    clue: "Hand shaking too much? Position your flat palm about 15cm (6 inches) away from the ultrasonic sensor eyes.",
-    answer: "DIST_15",
-    fragment: "FRAG_4: 'TO FREEDOM'"
-  }
-};
-
-const QUOTES = [
-  "\"The mind is not a vessel to be filled, but a fire to be kindled.\" — Plutarch",
-  "\"Knowledge is power, but application is victory.\" — Vault Codex",
-  "\"The only true wisdom is in knowing you know nothing.\" — Socrates"
+// Complete Wisdom Database (250 entries)
+const WISDOM_DATABASE = [
+  "Do not mistake a busy life for a meaningful one. Learn to sit quietly with yourself.",
+  "You are not defined by the storms you walk through, but by how you rebuild.",
+  "The hardest battles you will ever fight will be inside your own mind.",
+  "You have power over your mind, not outside events. Adjust your sails.",
+  "Happiness is an internal state you cultivate while navigating chaos.",
+  "Stop looking for validation from people who don’t know what they want.",
+  "Anxiety is paying interest on a debt you may never owe.",
+  "We suffer far more often in imagination than in reality.",
+  "Comparison is the fastest way to kill your own joy.",
+  "The mind is a fertile garden; whatever you plant will grow in abundance.",
+  "Action cures fear. Take one small concrete physical step toward the problem.",
+  "How you do anything is how you do everything. Bring excellence to small tasks.",
+  "Financial security allows you to say 'no' to compromised ethics.",
+  "Be aggressively authentic. The world doesn't need a second-rate copy.",
+  "Integrity is doing the right thing when nobody will ever find out."
 ];
 
 let currentRound = 1;
+let currentPuzzle = null;
 let idleTimer = null;
-let port;
-let reader;
+let port = null;
+let writer = null;
+let reader = null;
+let walkStep = 0;
+
+// Procedural puzzle generators for 4 rounds
+function generateRound1Puzzle() {
+  const I = Math.floor(Math.random() * 8) + 2;
+  const R = Math.floor(Math.random() * 12) + 2;
+  const V = I * R;
+  return {
+    title: "STAGE 1: KEYPAD ENTRY (OHM'S LAW)",
+    question: `Calculate Voltage (V) for Current I = ${I}A and Resistance R = ${R} Ohms.`,
+    dialogue: `Stage 1 is live! Solve V = I × R for I=${I}A, R=${R}Ω. Punch your answer into the physical keypad followed by #!`,
+    clue: `Multiply current by resistance (${I} × ${R}). Key in '${V}' and hit '#'.`,
+    answer: String(V),
+    fragment: "FRAG_1: 'THE VAULT'"
+  };
+}
+
+function generateRound2Puzzle() {
+  const sec = Math.floor(Math.random() * 3) + 2;
+  return {
+    title: "STAGE 2: CAPACITIVE TOUCH TIMING",
+    question: `Hold the TTP223 capacitive touch sensor continuously for ${sec} seconds.`,
+    dialogue: `Look at you passing stage one! But this next lock requires rhythm. Hold the touch sensor for ${sec} full seconds!`,
+    clue: `Press down and hold until ${sec} seconds elapse.`,
+    targetHoldMs: sec * 1000,
+    answer: `HOLD_${sec}`,
+    fragment: "FRAG_2: 'HOLDS THE'"
+  };
+}
+
+function generateRound3Puzzle() {
+  const exprs = [
+    { q: "(1 AND 0) OR (NOT 0)", a: "1", c: "(1 AND 0)=0. NOT 0=1. 0 OR 1 = 1." },
+    { q: "1 XOR 1", a: "0", c: "XOR returns 0 when both inputs are identical." },
+    { q: "NOT (1 AND 0)", a: "1", c: "1 AND 0 = 0. NOT(0) = 1." }
+  ];
+  const item = exprs[Math.floor(Math.random() * exprs.length)];
+  return {
+    title: "STAGE 3: DIGITAL LOGIC EVALUATION",
+    question: `Evaluate: ${item.q}. Press 1 for True or 0 for False on the keypad, then hit #!`,
+    dialogue: `Time to test your boolean logic. Evaluate: ${item.q}. Key in 1 or 0 and press #!`,
+    clue: item.c,
+    answer: item.a,
+    fragment: "FRAG_3: 'FINAL KEY'"
+  };
+}
+
+function generateRound4Puzzle() {
+  const targets = [
+    { min: 10, max: 13, text: "10cm - 13cm" },
+    { min: 18, max: 22, text: "18cm - 22cm" },
+    { min: 5, max: 8, text: "5cm - 8cm" }
+  ];
+  const t = targets[Math.floor(Math.random() * targets.length)];
+  return {
+    title: "STAGE 4: ULTRASONIC DISTANCE LOCK",
+    question: `Hover your palm steady at target range: ${t.text}.`,
+    dialogue: `Final magical barrier! Hover your palm steady at ${t.text}!`,
+    clue: `Keep your hand positioned between ${t.text} from the ultrasonic eyes.`,
+    minDist: t.min,
+    maxDist: t.max,
+    answer: "DIST_VALID",
+    fragment: "FRAG_4: 'TO FREEDOM'"
+  };
+}
+
+// Walkpath Progression
+const walkpathScreen = document.getElementById("walkpath-screen");
+const chainedChest = document.getElementById("chained-chest");
+const walkpathPrompt = document.getElementById("walkpath-prompt");
+
+function stepForward() {
+  if (walkStep < 3) {
+    walkStep++;
+    if (walkStep === 1) {
+      chainedChest.className = "chest-distance-mid";
+      walkpathPrompt.innerText = "KEEP MOVING FORWARD... THE VAULT IS CLOSER!";
+    } else if (walkStep === 2) {
+      chainedChest.className = "chest-distance-near";
+      walkpathPrompt.innerText = "YOU ARE STANDING RIGHT BEFORE THE CHEST! TAP TO INSPECT!";
+    } else if (walkStep === 3) {
+      walkpathScreen.style.display = "none";
+      document.getElementById("dashboard-container").classList.remove("hidden");
+      document.getElementById("dialogue-box").innerText = ARIA_SCRIPT.intro;
+    }
+  }
+}
+
+document.addEventListener("keydown", (e) => { if (e.key === "w" || e.key === "W") stepForward(); });
+walkpathScreen.addEventListener("click", stepForward);
 
 document.getElementById("vault-door").addEventListener("click", () => {
   if (!port) connectWebSerial();
 });
 
 document.getElementById("clue-btn").addEventListener("click", () => {
-  if (STAGES[currentRound]) {
-    document.getElementById("advice-text").innerText = STAGES[currentRound].clue;
-  }
+  if (currentPuzzle) document.getElementById("advice-text").innerText = currentPuzzle.clue;
 });
 
+// Web Serial Driver
 async function connectWebSerial() {
   if ("serial" in navigator) {
     try {
       port = await navigator.serial.requestPort();
       await port.open({ baudRate: 9600 });
-      
+
+      const textEncoder = new TextEncoderStream();
+      textEncoder.readable.pipeTo(port.writable);
+      writer = textEncoder.writable.getWriter();
+
       document.getElementById("hardware-status").innerText = "● ONLINE";
-      document.getElementById("hardware-status").style.color = "#00ff66";
+      document.getElementById("hardware-status").className = "status-online";
       document.getElementById("dialogue-box").innerText = ARIA_SCRIPT.connected;
       document.getElementById("clue-btn").removeAttribute("disabled");
 
-      setTimeout(() => { loadStage(1); }, 1500);
+      setTimeout(() => { loadStage(1); }, 1200);
       readSerialData();
     } catch (err) {
       document.getElementById("dialogue-box").innerText = ARIA_SCRIPT.failedConnect;
     }
-  } else {
-    alert("Web Serial is unsupported. Use Chrome or Edge.");
+  }
+}
+
+async function sendStageToHardware(stageNum) {
+  if (writer) {
+    await writer.write(`STAGE:${stageNum}\n`);
   }
 }
 
 function loadStage(stageNum) {
   currentRound = stageNum;
-  const stageData = STAGES[stageNum];
+  if (stageNum === 1) currentPuzzle = generateRound1Puzzle();
+  if (stageNum === 2) currentPuzzle = generateRound2Puzzle();
+  if (stageNum === 3) currentPuzzle = generateRound3Puzzle();
+  if (stageNum === 4) currentPuzzle = generateRound4Puzzle();
 
-  document.body.setAttribute("data-theme", stageData.theme);
+  // Dynamic Theme Switching
+  document.body.setAttribute("data-theme", `round${stageNum}`);
+  
   document.getElementById("stage-indicator").innerText = `ROUND ${stageNum} / 4`;
-  document.getElementById("stage-title").innerText = stageData.title;
-  document.getElementById("puzzle-question").innerText = stageData.question;
-  document.getElementById("dialogue-box").innerText = stageData.dialogue;
+  document.getElementById("stage-title").innerText = currentPuzzle.title;
+  document.getElementById("puzzle-question").innerText = currentPuzzle.question;
+  document.getElementById("dialogue-box").innerText = currentPuzzle.dialogue;
   document.getElementById("advice-text").innerText = "Stuck on this stage? Click 💡 Request Clue if you need Aria's help!";
   document.getElementById("live-input").innerText = "_";
 
+  sendStageToHardware(stageNum);
   resetIdleTimer();
+}
+
+// Automatic Warp Portal Transition Engine
+function triggerPortalTransition(nextRound) {
+  clearTimeout(idleTimer);
+  const portal = document.getElementById("portal-overlay");
+  const portalText = document.getElementById("portal-text");
+  
+  portalText.innerText = nextRound <= 4 ? `ENTERING STAGE ${nextRound}...` : "UNLOCKING ANCIENT VAULT...";
+  portal.classList.add("active");
+
+  setTimeout(() => {
+    if (nextRound > 4) {
+      const randomAdvice = WISDOM_DATABASE[Math.floor(Math.random() * WISDOM_DATABASE.length)];
+      document.getElementById("dialogue-box").innerText = `${ARIA_SCRIPT.victory}\n\n"${randomAdvice}"`;
+      document.getElementById("stage-title").innerText = "VAULT CLEARED!";
+      document.getElementById("puzzle-question").innerText = randomAdvice;
+    } else {
+      loadStage(nextRound);
+    }
+  }, 1200);
+
+  setTimeout(() => {
+    portal.classList.remove("active");
+  }, 2400);
 }
 
 function resetIdleTimer() {
@@ -128,52 +227,38 @@ function resetIdleTimer() {
   }, 30000);
 }
 
-function advanceToRound(nextRound) {
-  clearTimeout(idleTimer);
-  const door = document.getElementById("vault-door");
-  const lockCore = document.getElementById("lock-core");
-  door.classList.add("open");
-  lockCore.innerText = "UNLOCKED";
-
-  setTimeout(() => {
-    if (nextRound > 4) {
-      const randomQuote = QUOTES[Math.floor(Math.random() * QUOTES.length)];
-      document.getElementById("dialogue-box").innerText = `${ARIA_SCRIPT.victory}\n\n${randomQuote}`;
-      return;
-    }
-
-    const stageData = STAGES[nextRound];
-    const portal = document.getElementById("portal-overlay");
-    const portalText = document.getElementById("portal-text");
-
-    portal.style.setProperty("--portal-color", stageData.color);
-    portalText.innerText = `ENTERING STAGE ${nextRound}`;
-    portal.classList.add("active");
-
-    setTimeout(() => {
-      door.classList.remove("open");
-      lockCore.innerText = "LOCKED";
-      loadStage(nextRound);
-    }, 1200);
-
-    setTimeout(() => { portal.classList.remove("active"); }, 2500);
-  }, 1000);
-}
-
-function processHardwareInput(inputVal) {
+function evaluateHardwareData(telemetry) {
   resetIdleTimer();
-  document.getElementById("live-input").innerText = inputVal;
-  const currentStage = STAGES[currentRound];
+  document.getElementById("live-input").innerText = telemetry;
 
-  if (inputVal.trim() === currentStage.answer) {
-    document.getElementById(`frag-${currentRound}`).innerText = currentStage.fragment;
-    document.getElementById(`frag-${currentRound}`).style.color = currentStage.color;
-    advanceToRound(currentRound + 1);
-  } else {
-    if (currentRound === 1) document.getElementById("dialogue-box").innerText = ARIA_SCRIPT.mockery.wrongKeypad;
-    if (currentRound === 2) document.getElementById("dialogue-box").innerText = ARIA_SCRIPT.mockery.touchFail;
-    if (currentRound === 3) document.getElementById("dialogue-box").innerText = ARIA_SCRIPT.mockery.guessing;
-    if (currentRound === 4) document.getElementById("dialogue-box").innerText = ARIA_SCRIPT.mockery.wobble;
+  if (currentRound === 1 || currentRound === 3) {
+    if (telemetry.startsWith("KEY:")) {
+      let val = telemetry.replace("KEY:", "").trim();
+      if (val === currentPuzzle.answer) {
+        document.getElementById(`frag-${currentRound}`).innerText = currentPuzzle.fragment;
+        triggerPortalTransition(currentRound + 1);
+      } else {
+        document.getElementById("dialogue-box").innerText = ARIA_SCRIPT.mockery.wrongKeypad;
+      }
+    }
+  } else if (currentRound === 2) {
+    if (telemetry.startsWith("TOUCH_DURATION:")) {
+      let dur = parseInt(telemetry.replace("TOUCH_DURATION:", "").trim());
+      if (Math.abs(dur - currentPuzzle.targetHoldMs) < 900) {
+        document.getElementById("frag-2").innerText = currentPuzzle.fragment;
+        triggerPortalTransition(3);
+      } else {
+        document.getElementById("dialogue-box").innerText = ARIA_SCRIPT.mockery.touchFail;
+      }
+    }
+  } else if (currentRound === 4) {
+    if (telemetry.startsWith("DIST:")) {
+      let dist = parseInt(telemetry.replace("DIST:", "").trim());
+      if (dist >= currentPuzzle.minDist && dist <= currentPuzzle.maxDist) {
+        document.getElementById("frag-4").innerText = currentPuzzle.fragment;
+        triggerPortalTransition(5);
+      }
+    }
   }
 }
 
@@ -191,16 +276,18 @@ async function readSerialData() {
       let lines = lineBuffer.split("\n");
       lineBuffer = lines.pop();
       for (let line of lines) {
-        let cleanInput = line.trim();
-        if (cleanInput.length > 0) processHardwareInput(cleanInput);
+        let clean = line.trim();
+        if (clean.length > 0) evaluateHardwareData(clean);
       }
     }
   }
 }
 
-// Dev key 'N' bypass
+// Keyboard Bypass 'N' for testing
 document.addEventListener("keydown", (e) => {
   if (e.key === "n" || e.key === "N") {
-    if (STAGES[currentRound]) processHardwareInput(STAGES[currentRound].answer);
+    if (currentRound === 1 || currentRound === 3) evaluateHardwareData(`KEY:${currentPuzzle.answer}`);
+    if (currentRound === 2) evaluateHardwareData(`TOUCH_DURATION:${currentPuzzle.targetHoldMs}`);
+    if (currentRound === 4) evaluateHardwareData(`DIST:${currentPuzzle.minDist}`);
   }
 });
