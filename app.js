@@ -5,246 +5,46 @@ let currentAnswerBuffer = "";
 
 // Track continuous 7-second hold for Stage 4 Ultrasonic distance
 let distHoldStart = null;
+let lastDistValue = null;
+let shakeCount = 0;
 
-// 250 ADVICE DATABASE
+// 35 RELATIONSHIP & BREAKUP ADVICES DATABASE
 const ADVICE_DATABASE = [
-  "Anxiety is paying interest on a debt you may never owe.",
-  "Simplify before you optimize.",
-  "Measure twice, cut once.",
-  "Small daily improvements over time lead to stunning results.",
-  "Fail early, fail often, learn faster.",
-  "The best error message is the one that never shows up.",
-  "Focus on process over outcome.",
-  "Done is better than perfect.",
-  "Action cures fear; delay breeds doubt.",
-  "Consistency beats intensity every single time.",
-  "If you can't explain it simply, you don't understand it well enough.",
-  "Your direction is more important than your speed.",
-  "Master the fundamentals before chasing complexity.",
-  "Clear thinking requires quiet time.",
-  "Fix the cause, not the symptom.",
-  "Patience is passion tamed by discipline.",
-  "Doubt is removed by action, not by thought.",
-  "Knowledge is knowing a tomato is a fruit; wisdom is not putting it in a fruit salad.",
-  "Build modularly so one broken piece doesn't break everything.",
-  "Don't comment bad code — rewrite it.",
-  "Premature optimization is the root of all evil.",
-  "Assume nothing, test everything.",
-  "Great things are done by a series of small things brought together.",
-  "The secret to getting ahead is getting started.",
-  "A problem well-stated is a problem half-solved.",
-  "Make it work, make it right, make it fast — in that exact order.",
-  "Experience is simply the name we give our mistakes.",
-  "The harder you work for something, the greater you'll feel when you achieve it.",
-  "Work smarter, not harder, but don't avoid hard work.",
-  "Do one thing and do it exceptionally well.",
-  "Be curious, not judgmental.",
-  "You don't have to be extreme, just consistent.",
-  "Rest when you're tired, don't quit.",
-  "Stay hungry, stay foolish.",
-  "First principles thinking solves hard problems faster.",
-  "Attention to detail separates good from great.",
-  "A bug found early is a fortune saved late.",
-  "Never let a stumble be the end of your journey.",
-  "Learn from the mistakes of others; you can't live long enough to make them all yourself.",
-  "Quality is not an act, it is a habit.",
-  "Choose clarity over cleverness.",
-  "Every system is perfectly designed to get the results it gets.",
-  "Change the approach, not the goal.",
-  "The mind is like a parachute; it works best when open.",
-  "Focus on being productive instead of busy.",
-  "Confidence comes from competence built through practice.",
-  "If it isn't documented, it doesn't exist.",
-  "Write code for humans first, machines second.",
-  "You cannot manage what you do not measure.",
-  "Continuous learning is the minimum requirement for success.",
-  "The only real mistake is the one from which we learn nothing.",
-  "Discipline is choosing between what you want now and what you want most.",
-  "Small leaks sink great ships.",
-  "Control what you can control, let go of what you can't.",
-  "Simplicity is the ultimate sophistication.",
-  "Don't let yesterday take up too much of today.",
-  "Look for solutions, not excuses.",
-  "Iterate rapidly, refine continuously.",
-  "Feedback is the breakfast of champions.",
-  "You don't need a silver bullet, you need a steady process.",
-  "Think twice, code once.",
-  "A wise person adapts to the world; an unwise person expects the world to adapt.",
-  "Energy flows where attention goes.",
-  "Great systems make good habits automatic.",
-  "Never compromise on core standards.",
-  "Mistakes are proof that you are trying.",
-  "What gets scheduled gets done.",
-  "Your future is created by what you do today, not tomorrow.",
-  "Seek feedback, not validation.",
-  "When in doubt, break it down into smaller steps.",
-  "Structure brings freedom.",
-  "The cost of fixing a bug rises exponentially over time.",
-  "Always leave code cleaner than you found it.",
-  "It always seems impossible until it's done.",
-  "Don't re-invent the wheel unless you intend to learn how wheels work.",
-  "True mastery is taking complex ideas and making them effortless.",
-  "Stay calm in high-entropy situations.",
-  "To go fast, go alone. To go far, go together.",
-  "Keep your balance between theory and application.",
-  "Challenge your assumptions daily.",
-  "A clear mind leads to clean execution.",
-  "Do not fear failure; fear standing still.",
-  "The best way to predict the future is to create it.",
-  "One good habit can anchor a dozen others.",
-  "Perfection is achieved not when there is nothing more to add, but when nothing left to take away.",
-  "Be stubborn on vision, flexible on details.",
-  "Courage is resistance to fear, mastery of fear — not absence of fear.",
-  "Automation without strategy is just automated chaos.",
-  "Focus is saying no to 1,000 good ideas.",
-  "Success is the sum of small efforts repeated day in and day out.",
-  "Don't count the days, make the days count.",
-  "The expert in anything was once a beginner.",
-  "Logic gets you from A to B; imagination takes you everywhere.",
-  "Build strong foundations before raising high towers.",
-  "Work in public, learn in public.",
-  "A smooth sea never made a skilled sailor.",
-  "Guard your focus like your most valuable resource.",
-  "Complexity is the enemy of execution.",
-  "Be quick, but don't hurry.",
-  "Turn every obstacle into an opportunity.",
-  "Prioritize ruthlessly.",
-  "Good habits are hard to form but easy to live with.",
-  "Never mistake motion for progress.",
-  "You learn more from failure than success.",
-  "The best time to plant a tree was 20 years ago; the second best time is now.",
-  "A goal without a plan is just a wish.",
-  "Think long term, act short term.",
-  "The sharpest tool gets dull without maintenance.",
-  "Always test edge cases.",
-  "Don't optimize what shouldn't exist in the first place.",
-  "Creativity thrives within constraints.",
-  "Focus on inputs, and outputs will take care of themselves.",
-  "You are what you repeatedly do.",
-  "Doubt kills more dreams than failure ever will.",
-  "Build tools that multiply human potential.",
-  "Every line of code is a liability, not an asset.",
-  "To solve a big problem, solve ten smaller ones.",
-  "Adaptability is the ultimate survival trait.",
-  "Keep your momentum alive.",
-  "Curiosity is the engine of achievement.",
-  "Reframing the question often reveals the answer.",
-  "Treat root causes, not superficial symptoms.",
-  "The road to wisdom is paved with iterations.",
-  "Resilience is built in tough moments.",
-  "A good system beats willpower every time.",
-  "Small details make big impressions.",
-  "Never underestimate the power of a fresh perspective.",
-  "Stay grounded when winning, stay steady when losing.",
-  "Clear goals remove decision fatigue.",
-  "The most valuable asset is uninterrupted time.",
-  "Be willing to be a beginner every single day.",
-  "Excellence is a habit, not an event.",
-  "Listen more than you speak.",
-  "Make decisions based on data, not emotion.",
-  "Speed comes from elimination of friction.",
-  "Value utility over appearance.",
-  "True confidence is quiet; insecurity is loud.",
-  "Keep learning, keep building, keep sharing.",
-  "Plan for failure to guarantee success.",
-  "Small steps forward are still steps forward.",
-  "Don't fear hard problems; they hold the greatest value.",
-  "Patience with results, impatience with actions.",
-  "Great solutions look obvious in hindsight.",
-  "Your habits shape your identity.",
-  "Maintain high signal-to-noise ratio in work and life.",
-  "Never stop refining your craft.",
-  "The best shortcut is taking the long way with discipline.",
-  "Focus on impact, not activity.",
-  "Measure progress by value delivered.",
-  "Stay flexible in approach, firm in principles.",
-  "Invention requires a willingness to be misunderstood.",
-  "Build with empathy for the user.",
-  "Wisdom is knowing what to ignore.",
-  "Every constraint is a hidden advantage.",
-  "Solve for tomorrow, deliver for today.",
-  "Execution turns ideas into reality.",
-  "Stay humble, stay persistent.",
-  "Small improvements compound like interest.",
-  "Focus on mastery, not applause.",
-  "Clarity of thought produces clarity of action.",
-  "A calm mind sees solutions clearly.",
-  "Never rush critical steps.",
-  "Good design makes complex tasks simple.",
-  "Seek understanding before seeking agreement.",
-  "Turn noise into signal.",
-  "Preparation meets opportunity.",
-  "Don't build for hypothetical scenarios.",
-  "Maintain your standards when nobody is watching.",
-  "Consistency creates momentum.",
-  "Learn the rules so you know how to break them effectively.",
-  "The best feedback is rapid usage data.",
-  "Make hard choices early to avoid painful outcomes late.",
-  "Keep your tools sharp and your workspace clean.",
-  "Focus on depth over breadth.",
-  "Every failure is a data point.",
-  "Protect your energy, direct your focus.",
-  "Value truth over comfort.",
-  "Simple solutions endure longer.",
-  "Build iteratively and get feedback early.",
-  "Mastery requires deliberate practice.",
-  "Don't let perfection hold back progress.",
-  "Your environment dictates your defaults.",
-  "Think clearly, speak concisely, act decisively.",
-  "Focus on solving real problems.",
-  "Stay grounded in fundamentals.",
-  "Good judgment comes from experience.",
-  "Make complex ideas easy to digest.",
-  "Patience is key to solving tough engineering problems.",
-  "Work with conviction and humility.",
-  "Eliminate distraction to uncover focus.",
-  "Never stop asking 'why'.",
-  "Great ideas mean nothing without execution.",
-  "Small wins fuel big breakthroughs.",
-  "The fastest code is the code that doesn't run.",
-  "Focus on quality and speed will follow.",
-  "Build systems that scale gracefully.",
-  "Choose long-term growth over short-term comfort.",
-  "Stay open to changing your mind when given new data.",
-  "The quietest voice in the room often has the best point.",
-  "Never underestimate steady, daily effort.",
-  "Strive for balance, achieve through discipline.",
-  "Keep your momentum, protect your focus.",
-  "True innovation simplifies life.",
-  "Learn to embrace ambiguity.",
-  "Focus on building value that lasts.",
-  "Action resolves anxiety.",
-  "Think before you execute.",
-  "Respect the process and trust the outcome.",
-  "Continuous effort turns challenge into growth.",
-  "A disciplined mind creates a peaceful life.",
-  "Simplicity requires deep thought.",
-  "Focus on what truly matters.",
-  "Never trade long-term trust for short-term gain.",
-  "Great achievements require quiet determination.",
-  "Keep moving forward, one step at a time.",
-  "Stay resilient through unexpected challenges.",
-  "Focus, build, refine, repeat.",
-  "Wisdom begins with self-awareness.",
-  "Value progress over perfection every single day.",
-  "Small adjustments yield massive outcomes.",
-  "Stay patient, stay disciplined, stay focused.",
-  "Build with purpose and precision.",
-  "True strength is calm under pressure.",
-  "Learn constantly, adapt swiftly.",
-  "Every challenge contains its own solution.",
-  "Keep your eyes on the goal, not the obstacles.",
-  "Focus on long-term value, not momentary hype.",
-  "Quiet effort yields loud results.",
-  "Master your craft through repetition and feedback.",
-  "Stay true to core principles.",
-  "Simplicity is key to durability.",
-  "Focus on solutions, embrace iteration.",
-  "Build software like architecture — sturdy and elegant.",
-  "Persist until the code works smoothly.",
-  "Clear mind, steady hand, sharp execution.",
-  "Wisdom grows when you share knowledge freely.",
-  "Every problem solved is a foundation for the next achievement."
+  "Never settle for someone who treats you like an option when you make them a priority. If they consistently leave you questioning where you stand, that ambiguity is your answer.",
+  "Heartbreak is proof that you were courageous enough to care deeply. Let the grief run its natural course, but don't turn a temporary painful chapter into your permanent residence.",
+  "Communication without clarity is just noise, and effort without consistency is just manipulation. Look for the person whose words and daily actions align without requiring you to decipher mixed signals.",
+  "Going no-contact isn't a petty game to make an ex miss you; it's a boundary to protect your own healing. You cannot clean an emotional wound while you keep re-opening it by checking their social media.",
+  "A relationship should complement your existing life, not become your entire identity. Maintain your passions, your friendships, and your personal space so you never lose yourself in someone else.",
+  "Don't fall in love with someone's potential or the romanticized version of them that lives only in your head. Love the reality of who they show you they are right now, or have the bravery to walk away.",
+  "Closure isn't a final conversation or an apology you'll likely never receive. True closure happens internally the day you accept that what happened was reason enough to move forward.",
+  "Love isn't supposed to feel like an endless anxiety test or a constant uphill battle. While real relationships require effort, basic respect and emotional safety should come effortlessly.",
+  "It is far better to be single and lonely for a season than in a relationship and feeling lonely every single day. Solitude offers peace, whereas the wrong connection slowly drains your spirit.",
+  "The right partner won't require you to shrink your personality, compromise your values, or beg for basic affection. Never lower your standards just to fit inside someone else's comfortable limits.",
+  "Apologies without changed behavior are just scripts designed to buy time. Pay attention to patterns over promises, because people always reveal their true priorities through action.",
+  "Missing someone doesn't mean you made a mistake by walking away. It simply means you shared a meaningful bond, and it's normal to grieve what was while honoring why it ended.",
+  "Don't rush into a rebound just to fill a quiet room or silence a temporary ache. Take time to heal your heart first so you don't end up bleeding on someone who didn't cut you.",
+  "Boundaries are not walls to keep people out; they are clear roadmaps showing people how to love you safely. Anyone who resents your boundaries was benefiting from your lack of them.",
+  "Compatibility matters just as much as chemistry. You can share undeniable sparks with someone, but if your core values, life visions, and timing don't align, the fire will eventually burn you.",
+  "Stop re-reading old text messages searching for hidden clues on where things went sideways. You are fully allowed to close the book on a story that no longer brings you peace.",
+  "Growth in a relationship requires two willing participants who hold up a mirror. You cannot single-handedly fix or carry a bond when the other person refuses to grab their side.",
+  "Jealousy and control are not expressions of deep love; they are symptoms of unaddressed insecurity. Healthy love expands your freedom and trust rather than boxing you into constant suspicion.",
+  "Forgiving an ex doesn't mean condoning how they hurt you or letting them back into your life. Forgiveness is simply relinquishing the heavy weight of resentment so you can walk light again.",
+  "Pay close attention to how someone handles conflict and disagreement early on. A partner who uses your vulnerabilities as weapons during an argument is showing you their true character.",
+  "Love isn't about finding your missing half, but meeting another complete individual. You bring two whole lives together to build something greater, not to complete your own soul.",
+  "If you find yourself holding on simply because of the time you've already invested, remember the sunk cost fallacy. Don't spend the rest of your future suffering just because you spent years getting here.",
+  "You cannot negotiate someone into caring about you or wanting the same future. If you have to plead for baseline emotional investment, you are already fighting a losing battle.",
+  "Unpack your own emotional baggage before expecting a new partner to help you carry it. Unhealed wounds lead us to project past traumas onto people who had nothing to do with creating them.",
+  "A quiet, peaceful relationship isn't boring—it's standard emotional stability. Don't mistake constant emotional chaos and intense highs and lows for true passion or romantic depth.",
+  "Block them if that's what it takes to protect your mental health and break the habit of checking in. Out of sight helps bring peace to mind, giving your brain the space it needs to reset.",
+  "Never apologize for having high standards or wanting a deep, meaningful connection. The right person will gladly step up to meet your energy rather than complain that you ask for too much.",
+  "Rejection is often just redirection away from a scenario that would have compromised your long-term happiness. Being let go by the wrong person creates room for the right one to enter.",
+  "Love is a daily choice, not just a warm feeling that floats in and out when conditions are easy. It requires choosing each other on the mundane, frustrating, and exhausting days too.",
+  "You are allowed to outgrow people you once loved deeply. Changing your path and prioritizing your personal evolution isn't a betrayal; it's a natural part of growing up.",
+  "Don't let a bad chapter convince you that the whole story is ruined. One failed relationship or painful breakup does not define your worth or your capacity to find love again.",
+  "Listen closely to your gut instinct when something feels subtly off or unsafe. Your intuition often picks up on red flags and micro-inconsistencies long before your rational mind accepts them.",
+  "Romantic grand gestures mean very little if they aren't backed up by quiet, everyday kindness. The small, routine moments of thoughtfulness are what keep a bond resilient over time.",
+  "Treat yourself with the same gentle grace and compassion you would offer a best friend going through heartbreak. You are doing the best you can with the emotional tools you currently have.",
+  "The most important relationship you will ever cultivate is the one you build with yourself. When you genuinely respect and cherish who you are, you set an unshakeable standard for how others treat you."
 ];
 
 const ARIA_SCRIPT = {
@@ -255,6 +55,18 @@ const ARIA_SCRIPT = {
     "Timing missed! A tortoise has better hold precision.",
     "Hand out of range! Are you measuring with your eyes closed?",
     "Incorrect! Even a simple 555 timer chip gets this right."
+  ],
+  shakeMockery: [
+    "Are you trying to conduct an orchestra? Stop shaking your hand!",
+    "Is that hand tremor or system panic? Keep it steady for 7 seconds!",
+    "Your hands are trembling more than a dial-up modem! Freeze!",
+    "Steady those fingers! Trembling won't pass my ultrasonic test."
+  ],
+  clueMockery: [
+    "Requesting assistance already? How predictably human.",
+    "Need a hint? I thought your carbon brain could handle basic math!",
+    "Consulting my database because formulas are too hard?",
+    "A hint? Fine, but my neural network is judging your incompetence."
   ],
   praise: [
     "Acceptable... for a biological unit.",
@@ -268,6 +80,14 @@ function getRandomMockery() {
   return ARIA_SCRIPT.mockery[Math.floor(Math.random() * ARIA_SCRIPT.mockery.length)];
 }
 
+function getRandomShakeMockery() {
+  return ARIA_SCRIPT.shakeMockery[Math.floor(Math.random() * ARIA_SCRIPT.shakeMockery.length)];
+}
+
+function getRandomClueMockery() {
+  return ARIA_SCRIPT.clueMockery[Math.floor(Math.random() * ARIA_SCRIPT.clueMockery.length)];
+}
+
 function getRandomPraise() {
   return ARIA_SCRIPT.praise[Math.floor(Math.random() * ARIA_SCRIPT.praise.length)];
 }
@@ -276,7 +96,7 @@ function getRandomAdvice() {
   return ADVICE_DATABASE[Math.floor(Math.random() * ADVICE_DATABASE.length)];
 }
 
-// PUZZLE GENERATORS (Formula-only clues)
+// PUZZLE GENERATORS
 function generateRound1Puzzle() {
   const i = Math.floor(Math.random() * 5) + 2;
   const r = Math.floor(Math.random() * 8) + 5;
@@ -306,43 +126,51 @@ function generateRound2Puzzle() {
   };
 }
 
+// STAGE 3: ADVANCED LOGIC GATES (XOR, NAND, NOR)
 function generateRound3Puzzle() {
+  const puzzles = [
+    { question: "Evaluate: (1 XOR 0) AND (1 NAND 0)", answer: 1, clue: "Logic Rules: XOR = 1 if inputs differ. NAND = 0 only if both inputs are 1." },
+    { question: "Evaluate: (1 NOR 0) XOR (0 NAND 1)", answer: 1, clue: "Logic Rules: NOR = 1 only if both inputs are 0. NAND = 1 if at least one input is 0." },
+    { question: "Evaluate: (1 XOR 1) OR (1 NAND 1)", answer: 0, clue: "Logic Rules: (1 XOR 1) = 0. (1 NAND 1) = 0. (0 OR 0) = 0." },
+    { question: "Evaluate: (0 XOR 1) AND (1 NOR 0)", answer: 0, clue: "Logic Rules: (0 XOR 1) = 1. (1 NOR 0) = 0. (1 AND 0) = 0." },
+    { question: "Evaluate: (1 NAND 0) XOR (0 NOR 0)", answer: 0, clue: "Logic Rules: (1 NAND 0) = 1. (0 NOR 0) = 1. (1 XOR 1) = 0." }
+  ];
+  
+  const selected = puzzles[Math.floor(Math.random() * puzzles.length)];
   return {
-    title: "STAGE 3: LOGIC EVALUATION",
-    question: "Evaluate Binary Logic: (1 AND 1) OR (0 AND 1). Enter 1 for True, 0 for False.",
-    dialogue: "Boolean time! Solve (1 AND 1) OR (0 AND 1). Enter 1 or 0.",
-    answer: 1,
-    clue: "Formula: (A AND B) = 1 only if both inputs are 1. (A OR B) = 1 if at least one input is 1.",
+    title: "STAGE 3: ADVANCED LOGIC CIRCUITS (XOR / NAND / NOR)",
+    question: selected.question,
+    dialogue: "Advanced logic gates engaged! Evaluate the expression and enter 1 for True or 0 for False.",
+    answer: selected.answer,
+    clue: selected.clue,
     fragment: "GATE"
   };
 }
 
+// STAGE 4: ULTRASONIC WITH ±1cm TOLERANCE & HAND SHAKE MOCKERY
 function generateRound4Puzzle() {
   const useInches = Math.random() > 0.5;
-  let minCm, maxCm, questionText, clueText;
+  let targetCm, questionText, clueText;
 
   if (useInches) {
-    const minIn = 4;
-    const maxIn = 6;
-    minCm = Math.round(minIn * 2.54);
-    maxCm = Math.round(maxIn * 2.54);
-    questionText = `Target Distance Range: Between ${minIn} inches and ${maxIn} inches. Convert to cm and hold your hand steady for 7 seconds!`;
-    clueText = "Formula: Distance in Centimeters (cm) = Distance in Inches (in) × 2.54";
+    const inches = Math.floor(Math.random() * 4) + 4; // 4 to 7 inches
+    targetCm = Math.round(inches * 2.54);
+    questionText = `Convert ${inches} inches to cm (Target: ${targetCm} cm). Hold hand steady within ±1 cm tolerance for 7s!`;
+    clueText = "Formula: Distance (cm) = Distance (Inches) × 2.54. Tolerance allowed: ±1 cm.";
   } else {
-    const minDm = 1;
-    const maxDm = 1.5;
-    minCm = Math.round(minDm * 10);
-    maxCm = Math.round(maxDm * 10);
-    questionText = `Target Distance Range: Between ${minDm} dm and ${maxDm} dm. Convert to cm and hold your hand steady for 7 seconds!`,
-    clueText = "Formula: Distance in Centimeters (cm) = Distance in Decimeters (dm) × 10";
+    const dm = (Math.floor(Math.random() * 6) + 10) / 10; // 1.0 to 1.5 dm
+    targetCm = Math.round(dm * 10);
+    questionText = `Convert ${dm} dm to cm (Target: ${targetCm} cm). Hold hand steady within ±1 cm tolerance for 7s!`;
+    clueText = "Formula: Distance (cm) = Distance (dm) × 10. Tolerance allowed: ±1 cm.";
   }
 
   return {
-    title: "STAGE 4: ULTRASONIC CONVERSION (7s HOLD)",
+    title: "STAGE 4: ULTRASONIC CONVERSION (7s STABLE HOLD)",
     question: questionText,
-    dialogue: "Convert measurement to cm, then hold your hand at that distance continuously for 7 seconds!",
-    minDist: minCm,
-    maxDist: maxCm,
+    dialogue: "Convert the measurement to cm! Position your hand within ±1 cm of target and keep it steady for 7 seconds.",
+    targetCm: targetCm,
+    minDist: targetCm - 1,
+    maxDist: targetCm + 1,
     clue: clueText,
     fragment: "WAVE"
   };
@@ -448,13 +276,15 @@ function triggerPortalTransition(nextStage) {
 function loadStage(stageNum) {
   currentRound = stageNum;
   distHoldStart = null;
+  lastDistValue = null;
+  shakeCount = 0;
 
   if (stageNum === 1) currentPuzzle = generateRound1Puzzle();
   if (stageNum === 2) currentPuzzle = generateRound2Puzzle();
   if (stageNum === 3) currentPuzzle = generateRound3Puzzle();
   if (stageNum === 4) currentPuzzle = generateRound4Puzzle();
 
-  // Dynamic Round Theme Switch
+  // Switch Round Visual Theme
   document.body.setAttribute("data-theme", `round${stageNum}`);
   document.getElementById("stage-indicator").innerText = `STAGE: ROUND ${stageNum} / 4`;
   document.getElementById("stage-title").innerText = currentPuzzle.title;
@@ -462,7 +292,6 @@ function loadStage(stageNum) {
   document.getElementById("dialogue-box").innerText = currentPuzzle.dialogue;
   document.getElementById("clue-text").innerText = "Stuck on this stage? Click Request Clue to see formula guidance!";
 
-  // Reset telemetry display for non-stage 4
   if (stageNum !== 4) {
     document.getElementById("live-input").innerText = "_";
   }
@@ -499,7 +328,7 @@ function checkAnswer() {
 function evaluateHardwareData(telemetry) {
   let cleanData = telemetry.replace(/[^\x20-\x7E]/g, '').trim();
 
-  // STAGE 1 & 3: Keypad
+  // STAGE 1 & 3: Keypad Input
   if (currentRound === 1 || currentRound === 3) {
     if (cleanData.includes("KEY:")) {
       let val = cleanData.substring(cleanData.indexOf("KEY:") + 4).trim();
@@ -524,20 +353,35 @@ function evaluateHardwareData(telemetry) {
       }
     }
   } 
-  // STAGE 4: Ultrasonic Sensor (Distance strictly tracked here & 7 seconds hold enforced)
+  // STAGE 4: Ultrasonic Sensor (Strictly evaluated here with ±1cm Tolerance & Hand Shake Mockery)
   else if (currentRound === 4) {
     if (cleanData.includes("DIST:")) {
       let dist = parseInt(cleanData.substring(cleanData.indexOf("DIST:") + 5).trim());
       document.getElementById("live-input").innerText = `${dist} cm`;
 
-      // Check target range requirement
+      // Check for rapid hand movement / shaking
+      if (lastDistValue !== null && Math.abs(dist - lastDistValue) >= 3) {
+        shakeCount++;
+      }
+      lastDistValue = dist;
+
+      // In target range (±1cm tolerance)
       if (dist >= currentPuzzle.minDist && dist <= currentPuzzle.maxDist) {
         if (!distHoldStart) {
           distHoldStart = Date.now();
+          shakeCount = 0;
         }
         
         let heldSec = Math.floor((Date.now() - distHoldStart) / 1000);
-        document.getElementById("dialogue-box").innerText = `🎯 Hand in target range (${dist}cm)! Hold steady: ${heldSec} / 7 seconds...`;
+
+        // If user is shaking hand inside/around tolerance range
+        if (shakeCount >= 3) {
+          document.getElementById("dialogue-box").innerText = `👋 ${getRandomShakeMockery()}`;
+          shakeCount = 0;
+        } else {
+          document.getElementById("dialogue-box").innerText = `🎯 Target range hit (${dist}cm)! Hold steady: ${heldSec} / 7 seconds...`;
+        }
+
         sendLCDText("TARGET ACQUIRED", `HOLD: ${heldSec}/7 SEC`);
 
         if (Date.now() - distHoldStart >= 7000) {
@@ -545,10 +389,14 @@ function evaluateHardwareData(telemetry) {
           triggerPortalTransition(5);
         }
       } else {
-        // Reset timer if hand moves out of range
+        // Reset timer if hand drifts outside ±1cm range
+        if (distHoldStart !== null) {
+          document.getElementById("dialogue-box").innerText = `❌ Hand moved out of range! ${getRandomShakeMockery()}`;
+        } else {
+          document.getElementById("dialogue-box").innerText = `⚠️ Out of range (${dist}cm). Target: ${currentPuzzle.targetCm} cm (Allowed: ${currentPuzzle.minDist}-${currentPuzzle.maxDist} cm)`;
+        }
         distHoldStart = null;
-        document.getElementById("dialogue-box").innerText = `⚠️ Out of range (${dist}cm). Keep hand between ${currentPuzzle.minDist}cm and ${currentPuzzle.maxDist}cm!`;
-        sendLCDText("OUT OF RANGE!", "TARGET: " + currentPuzzle.minDist + "-" + currentPuzzle.maxDist + "cm");
+        sendLCDText("OUT OF RANGE!", `TARGET: ${currentPuzzle.targetCm}cm`);
       }
     }
   }
@@ -589,7 +437,7 @@ async function connectSerial() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  // Handle Opening Black-Themed Sequence
+  // Intro Sequence Handler
   const introModal = document.getElementById("intro-modal");
   const startVaultBtn = document.getElementById("start-vault-btn");
   if (startVaultBtn && introModal) {
@@ -602,8 +450,10 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("check-btn").addEventListener("click", checkAnswer);
   document.getElementById("clear-btn").addEventListener("click", clearInput);
   
+  // Clue button click handler with mockery dialogue
   document.getElementById("clue-btn").addEventListener("click", () => {
     if (currentPuzzle.clue) {
+      document.getElementById("dialogue-box").innerText = `😏 ${getRandomClueMockery()}`;
       document.getElementById("clue-text").innerText = currentPuzzle.clue;
     }
   });
