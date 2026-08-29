@@ -3,100 +3,100 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Vault of Wisdom - Hardware Escape Box</title>
+  <title>Vault of Wisdom - Terminal</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body data-theme="round1">
-
-  <!-- AAA Walkpath Entrance -->
-  <div id="walkpath-screen">
-    <div class="walkpath-canvas">
-      <div class="perspective-grid"></div>
-      <div id="chained-chest" class="chest-distance-far">
-        <div class="chest-chains">⛓️🔒⛓️</div>
-        <div class="chest-sprite">🏴‍☠️</div>
+  <div class="dashboard-container">
+    
+    <header class="status-bar">
+      <div class="hw-status">
+        HARDWARE: <span id="connection-status" class="status-indicator offline">• OFFLINE</span>
+        <button id="connect-btn" class="connect-btn">CONNECT DEVICE</button>
       </div>
-    </div>
-    <div class="aaa-prompt-bar">
-      <span id="walkpath-prompt">MOVE FORWARD TO REACH CLOSER (CLICK OR PRESS 'W')</span>
-    </div>
-  </div>
-
-  <!-- Automatic Portal Transition Screen -->
-  <div id="portal-overlay">
-    <div class="portal-vortex">
-      <div class="ring ring-1"></div>
-      <div class="ring ring-2"></div>
-      <div class="ring ring-3"></div>
-      <div class="portal-core"></div>
-    </div>
-    <div class="portal-title" id="portal-text">WARPING THROUGH REALMS...</div>
-  </div>
-
-  <!-- Main Game Dashboard -->
-  <div class="container hidden" id="dashboard-container">
-    <header class="terminal-card status-bar">
-      <div><strong>HARDWARE:</strong> <span id="hardware-status" class="status-offline">● DISCONNECTED</span></div>
-      <div><strong>STAGE:</strong> <span id="stage-indicator" class="accent-text">ROUND 1 / 4</span></div>
+      <div class="stage-info" id="stage-indicator">STAGE: ROUND 1 / 4</div>
     </header>
 
-    <main class="game-grid">
-      <!-- Aria Avatar & Custom Dialogue Box -->
-      <aside class="terminal-card avatar-panel">
-        <div id="avatar-container">
-          <svg width="100" height="100" viewBox="0 0 100 100">
-            <circle class="spinning-ring" cx="50" cy="50" r="45" stroke="var(--accent-main)" stroke-width="2" fill="none" stroke-dasharray="4 2"/>
-            <polygon points="50,15 75,30 75,65 50,85 25,65 25,30" fill="var(--avatar-bg)" stroke="var(--accent-main)" stroke-width="2"/>
-            <rect x="35" y="42" width="30" height="6" rx="3" fill="var(--accent-main)"/>
-          </svg>
+    <div class="main-layout">
+      <section class="left-panel">
+        <div class="avatar-box">
+          <div class="aria-icon"></div>
         </div>
-        <h3 class="accent-text">A.R.I.A.</h3>
-        <p class="subtext">Guardian AI</p>
-        
-        <!-- Speech Bubble Container -->
-        <div class="aria-speech-bubble">
-          <div class="speech-arrow"></div>
-          <p id="dialogue-box">TAP THE CHEST TO OPEN 🏴‍☠️</p>
+        <h2 class="ai-name">A.R.I.A.</h2>
+        <p class="ai-title">Guardian AI</p>
+        <div class="dialogue-box" id="dialogue-box">
+          The vault's security protocols aren't getting any younger! Solve the formula to continue.
         </div>
-      </aside>
+      </section>
 
-      <!-- Puzzle Panel -->
-      <section class="terminal-card puzzle-panel">
-        <div class="chest-wrapper">
-          <div class="vault-door" id="vault-door">
-            <div class="door-panel door-left"></div>
-            <div class="door-panel door-right"></div>
-            <div class="vault-lock-core" id="lock-core">TAP TO UNLOCK 🏴‍☠️</div>
+      <section class="right-panel">
+        <div class="unlock-banner" id="unlock-banner">
+          <button class="unlock-btn">TAP TO UNLOCK 🔓</button>
+        </div>
+
+        <h1 class="stage-title" id="stage-title">STAGE 1: KEYPAD ENTRY (OHM'S LAW)</h1>
+        <p class="puzzle-question" id="puzzle-question">Calculate Voltage (V) for Current I = 5A and Resistance R = 12 Ohms.</p>
+
+        <div class="help-desk">
+          <div class="help-header">
+            <span>💡 ARIA'S HELP DESK</span>
+            <button id="clue-btn" class="clue-btn">Request Clue</button>
+          </div>
+          <p id="clue-text">Stuck on this stage? Click Request Clue if you need Aria's help!</p>
+        </div>
+
+        <div class="telemetry-card">
+          <div class="telemetry-label">LIVE HARDWARE TELEMETRY:</div>
+          <div class="live-input" id="live-input">_</div>
+
+          <div class="input-controls">
+            <input type="text" id="answer-input" placeholder="Enter answer or use keypad..." autocomplete="off">
+            <button id="check-btn" class="action-btn check-btn">CHECK ANSWER</button>
+            <button id="clear-btn" class="action-btn clear-btn">RESET</button>
           </div>
         </div>
 
-        <h2 id="stage-title" class="accent-text">SYSTEM STANDBY</h2>
-        <p id="puzzle-question">Connect hardware to initiate trials.</p>
-
-        <div class="advice-card">
-          <div class="advice-header">
-            <span class="advice-title">💡 ARIA'S HELP DESK</span>
-            <button id="clue-btn" disabled>Request Clue</button>
-          </div>
-          <p id="advice-text">Stuck on this stage? Click 💡 Request Clue if you need Aria's help!</p>
-        </div>
-
-        <div class="input-display">
-          <small>LIVE HARDWARE TELEMETRY:</small>
-          <div id="live-input" class="accent-text">_</div>
-        </div>
-
-        <div class="fragment-box">
-          <small class="accent-text">DECRYPTED MESSAGE FRAGMENTS:</small>
-          <div id="hidden-fragments">
-            <span id="frag-1">[STAGE 1: ???]</span> — 
-            <span id="frag-2">[STAGE 2: ???]</span> — 
-            <span id="frag-3">[STAGE 3: ???]</span> — 
-            <span id="frag-4">[STAGE 4: ???]</span>
+        <div class="fragments-card">
+          <div class="fragments-label">DECRYPTED MESSAGE FRAGMENTS:</div>
+          <div class="fragment-list">
+            [STAGE 1: <span id="frag-1">???</span>] — 
+            [STAGE 2: <span id="frag-2">???</span>] — 
+            [STAGE 3: <span id="frag-3">???</span>] — 
+            [STAGE 4: <span id="frag-4">???</span>]
           </div>
         </div>
       </section>
-    </main>
+    </div>
+
+  </div>
+
+  <!-- TREASURE CHEST CLEARANCE MODAL -->
+  <div id="treasure-modal" class="treasure-modal hidden">
+    <div class="treasure-backdrop"></div>
+    <div class="treasure-stage">
+      <h1 class="victory-header">VAULT DECRYPTED</h1>
+      <p id="chest-prompt" class="chest-prompt">TAP THE CHEST TO CLAIM THE WISDOM</p>
+
+      <div class="chest-wrapper" id="treasure-chest">
+        <!-- Text emerging from inside chest -->
+        <div class="wisdom-reveal" id="wisdom-reveal">
+          <div class="wisdom-card">
+            <span class="wisdom-badge">ANCIENT WISDOM UNLOCKED</span>
+            <p class="wisdom-quote">"Anxiety is paying interest on a debt you may never owe."</p>
+          </div>
+        </div>
+
+        <!-- 3D Chest Structure -->
+        <div class="chest-lid">
+          <div class="chest-lock" id="chest-lock">🔒</div>
+        </div>
+        <div class="chest-body">
+          <div class="inner-gold-glow"></div>
+        </div>
+      </div>
+
+      <button id="restart-btn" class="action-btn check-btn restart-btn hidden">LOCK VAULT & REPLAY</button>
+    </div>
   </div>
 
   <script src="app.js"></script>
