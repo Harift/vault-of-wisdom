@@ -1,120 +1,75 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Vault of Wisdom - Terminal</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vault of Wisdom</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body data-theme="round1">
-
-  <!-- BLACK THEMED OPENING TREASURE INTRO SEQUENCES -->
-  <div id="intro-modal" class="intro-modal">
-    <div class="intro-backdrop"></div>
-    <div class="intro-content">
-      <h1 class="intro-title">🔒 VAULT OF WISDOM</h1>
-      <p class="intro-subtitle">A.R.I.A. SECURITY MATRIX INITIALIZED</p>
-      
-      <div class="black-chest-container" id="black-intro-chest">
-        <div class="black-chest-lid">
-          <div class="black-lock">🔐</div>
-        </div>
-        <div class="black-chest-body">
-          <div class="black-glow"></div>
-        </div>
-      </div>
-
-      <button id="start-vault-btn" class="start-btn">INITIALIZE SECURITY CLEARANCE</button>
+  <!-- Intro Modal -->
+  <div id="intro-modal" class="modal-overlay">
+    <div class="modal-content">
+      <h2>🔐 VAULT OF WISDOM</h2>
+      <p style="margin: 15px 0; color: #94a3b8;">A.R.I.A. SECURITY MATRIX INITIALIZED</p>
+      <button id="start-vault-btn">INITIALIZE SECURITY CLEARANCE</button>
     </div>
   </div>
 
-  <div class="dashboard-container">
-    <header class="status-bar">
-      <div class="hw-status">
-        HARDWARE: <span id="connection-status" class="status-indicator offline">• OFFLINE</span>
-        <button id="connect-btn" class="connect-btn">CONNECT DEVICE</button>
+  <div class="container">
+    <header>
+      <h1>🔐 Vault of Wisdom</h1>
+      <div class="status-wrapper">
+        <button id="connect-btn">CONNECT DEVICE</button>
+        <span id="connection-status" class="status-indicator">• OFFLINE</span>
       </div>
-      <div class="stage-info" id="stage-indicator">STAGE: ROUND 1 / 4</div>
     </header>
 
-    <div class="main-layout">
-      <section class="left-panel">
-        <div class="avatar-box">
-          <div class="aria-icon"></div>
-        </div>
-        <h2 class="ai-name">A.R.I.A.</h2>
-        <p class="ai-title">Guardian AI</p>
-        <div class="dialogue-box" id="dialogue-box">
-          Initializing security matrix... Stand by for calculation demands!
-        </div>
-      </section>
+    <div class="panel">
+      <div class="stage-header">
+        <span id="stage-indicator">STAGE: ROUND 1 / 4</span>
+        <span id="stage-title">STAGE 1: KEYPAD ENTRY (OHM'S LAW)</span>
+      </div>
+      <p id="puzzle-question">Loading puzzle...</p>
+      <p id="dialogue-box">A.R.I.A. System Online.</p>
+    </div>
 
-      <section class="right-panel">
-        <div class="unlock-banner" id="unlock-banner">
-          <button class="unlock-btn">VAULT LEVEL ACTIVE 🔓</button>
-        </div>
+    <div class="panel">
+      <div class="stage-header">
+        <span>💡 A.R.I.A'S HELP DESK</span>
+        <button id="clue-btn">Request Clue</button>
+      </div>
+      <p id="clue-text">Stuck on this stage? Click Request Clue to see formula guidance!</p>
+    </div>
 
-        <h1 class="stage-title" id="stage-title">STAGE 1: KEYPAD ENTRY (OHM'S LAW)</h1>
-        <p class="puzzle-question" id="puzzle-question">Calculate Voltage (V) for Current I = 5A and Resistance R = 12 Ohms.</p>
+    <div class="panel">
+      <div class="stage-header">
+        <span>LIVE HARDWARE TELEMETRY</span>
+        <span id="live-input">_</span>
+      </div>
+      <div class="input-group">
+        <input type="text" id="answer-input" placeholder="Enter answer or use keypad..." />
+        <button id="check-btn">CHECK ANSWER</button>
+        <button id="clear-btn">RESET</button>
+      </div>
+    </div>
 
-        <div class="help-desk">
-          <div class="help-header">
-            <span>💡 ARIA'S HELP DESK</span>
-            <button id="clue-btn" class="clue-btn">Request Clue</button>
-          </div>
-          <p id="clue-text">Stuck on this stage? Click Request Clue to see formula guidance!</p>
-        </div>
-
-        <div class="telemetry-card">
-          <div class="telemetry-label">LIVE HARDWARE TELEMETRY:</div>
-          <div class="live-input" id="live-input">_</div>
-
-          <div class="input-controls">
-            <input type="text" id="answer-input" placeholder="Enter answer or use keypad..." autocomplete="off">
-            <button id="check-btn" class="action-btn check-btn">CHECK ANSWER</button>
-            <button id="clear-btn" class="action-btn clear-btn">RESET</button>
-          </div>
-        </div>
-
-        <div class="fragments-card">
-          <div class="fragments-label">DECRYPTED MESSAGE FRAGMENTS:</div>
-          <div class="fragment-list">
-            [STAGE 1: <span id="frag-1">???</span>] — 
-            [STAGE 2: <span id="frag-2">???</span>] — 
-            [STAGE 3: <span id="frag-3">???</span>] — 
-            [STAGE 4: <span id="frag-4">???</span>]
-          </div>
-        </div>
-      </section>
+    <div class="fragment-tracker">
+      <span>[STAGE 1: <strong id="frag-1">???</strong>]</span>
+      <span>[STAGE 2: <strong id="frag-2">???</strong>]</span>
+      <span>[STAGE 3: <strong id="frag-3">???</strong>]</span>
+      <span>[STAGE 4: <strong id="frag-4">???</strong>]</span>
     </div>
   </div>
 
-  <!-- ANIMATED 3D ENDING TREASURE CHEST OVERLAY -->
-  <div id="treasure-modal" class="treasure-modal hidden">
-    <div class="treasure-backdrop"></div>
-    <div class="treasure-stage">
-      <h1 class="victory-header">✨ VAULT DECRYPTED ✨</h1>
-      <p id="chest-prompt" class="chest-prompt">TAP THE CHEST TO UNLOCK THE ANCIENT WISDOM</p>
-
-      <div class="chest-container" id="treasure-chest">
-        <div class="wisdom-reveal" id="wisdom-reveal">
-          <div class="wisdom-card">
-            <span class="wisdom-badge">ANCIENT WISDOM UNLOCKED</span>
-            <p class="wisdom-quote">"Anxiety is paying interest on a debt you may never owe."</p>
-          </div>
-        </div>
-
-        <div class="chest-lid">
-          <div class="lid-band"></div>
-          <div class="chest-lock" id="chest-lock">🔒</div>
-        </div>
-        <div class="chest-body">
-          <div class="inner-gold-glow"></div>
-          <div class="chest-front-latch"></div>
-        </div>
-      </div>
-
-      <button id="restart-btn" class="action-btn check-btn restart-btn hidden">LOCK VAULT & REPLAY</button>
+  <!-- Treasure / Completion Modal -->
+  <div id="treasure-modal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <h2>✨ VAULT DECRYPTED ✨</h2>
+      <div id="treasure-chest" class="chest-box">🎁</div>
+      <p id="chest-prompt">TAP THE CHEST TO UNLOCK THE ANCIENT WISDOM</p>
+      <p class="wisdom-quote"></p>
+      <button id="restart-btn" class="hidden">RESTART VAULT SYSTEM</button>
     </div>
   </div>
 
