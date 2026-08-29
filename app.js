@@ -3,12 +3,10 @@ let currentRound = 1;
 let currentPuzzle = {};
 let currentAnswerBuffer = "";
 
-// Track continuous 7-second hold for Stage 4 Ultrasonic distance
 let distHoldStart = null;
 let lastDistValue = null;
 let shakeCount = 0;
 
-// 35 RELATIONSHIP & BREAKUP ADVICES DATABASE
 const ADVICE_DATABASE = [
   "Never settle for someone who treats you like an option when you make them a priority. If they consistently leave you questioning where you stand, that ambiguity is your answer.",
   "Heartbreak is proof that you were courageous enough to care deeply. Let the grief run its natural course, but don't turn a temporary painful chapter into your permanent residence.",
@@ -76,27 +74,12 @@ const ARIA_SCRIPT = {
   ]
 };
 
-function getRandomMockery() {
-  return ARIA_SCRIPT.mockery[Math.floor(Math.random() * ARIA_SCRIPT.mockery.length)];
-}
+function getRandomMockery() { return ARIA_SCRIPT.mockery[Math.floor(Math.random() * ARIA_SCRIPT.mockery.length)]; }
+function getRandomShakeMockery() { return ARIA_SCRIPT.shakeMockery[Math.floor(Math.random() * ARIA_SCRIPT.shakeMockery.length)]; }
+function getRandomClueMockery() { return ARIA_SCRIPT.clueMockery[Math.floor(Math.random() * ARIA_SCRIPT.clueMockery.length)]; }
+function getRandomPraise() { return ARIA_SCRIPT.praise[Math.floor(Math.random() * ARIA_SCRIPT.praise.length)]; }
+function getRandomAdvice() { return ADVICE_DATABASE[Math.floor(Math.random() * ADVICE_DATABASE.length)]; }
 
-function getRandomShakeMockery() {
-  return ARIA_SCRIPT.shakeMockery[Math.floor(Math.random() * ARIA_SCRIPT.shakeMockery.length)];
-}
-
-function getRandomClueMockery() {
-  return ARIA_SCRIPT.clueMockery[Math.floor(Math.random() * ARIA_SCRIPT.clueMockery.length)];
-}
-
-function getRandomPraise() {
-  return ARIA_SCRIPT.praise[Math.floor(Math.random() * ARIA_SCRIPT.praise.length)];
-}
-
-function getRandomAdvice() {
-  return ADVICE_DATABASE[Math.floor(Math.random() * ADVICE_DATABASE.length)];
-}
-
-// ROUND 1: COMPLEX VALUES FOR OHM'S LAW
 function generateRound1Puzzle() {
   const complexPairs = [
     { i: 2.5, r: 48, v: 120 },
@@ -120,7 +103,6 @@ function generateRound1Puzzle() {
   };
 }
 
-// ROUND 2: TOUCH TIMING (REDUCED TOLERANCE ±0.3s)
 function generateRound2Puzzle() {
   const mult = Math.floor(Math.random() * 3) + 2;
   const base = Math.floor(Math.random() * 3) + 1;
@@ -132,12 +114,11 @@ function generateRound2Puzzle() {
     dialogue: `Solve the equation to find hold duration X in seconds. Press and hold the touch sensor for exactly X seconds!`,
     targetHoldMs: targetSec * 1000,
     targetSec: targetSec,
-    clue: "Formula: X = (A / 2) + B. Evaluate division inside parentheses first, then add the constant B.",
+    clue: "Formula: X = (A / 2) + B. Evaluate division inside parentheses first, then add constant B.",
     fragment: "TIME"
   };
 }
 
-// STAGE 3: ADVANCED LOGIC GATES (XOR, NAND, NOR)
 function generateRound3Puzzle() {
   const puzzles = [
     { question: "Evaluate: (1 XOR 0) AND (1 NAND 0)", answer: 1, clue: "Logic Rules: XOR = 1 if inputs differ. NAND = 0 only if both inputs are 1." },
@@ -158,18 +139,17 @@ function generateRound3Puzzle() {
   };
 }
 
-// STAGE 4: ULTRASONIC CONVERSION (TARGET HIDDEN FROM QUESTION)
 function generateRound4Puzzle() {
   const useInches = Math.random() > 0.5;
   let targetCm, questionText, clueText;
 
   if (useInches) {
-    const inches = Math.floor(Math.random() * 5) + 4; // 4 to 8 inches
+    const inches = Math.floor(Math.random() * 5) + 4;
     targetCm = Math.round(inches * 2.54);
     questionText = `Convert ${inches} inches directly into cm. Hold hand steady at the converted distance within ±1 cm tolerance for 7s!`;
     clueText = "Formula: Distance (cm) = Distance (Inches) × 2.54. Do the conversion yourself! Tolerance: ±1 cm.";
   } else {
-    const dm = (Math.floor(Math.random() * 8) + 10) / 10; // 1.0 to 1.7 dm
+    const dm = (Math.floor(Math.random() * 8) + 10) / 10;
     targetCm = Math.round(dm * 10);
     questionText = `Convert ${dm} decimeters (dm) directly into cm. Hold hand steady at the converted distance within ±1 cm tolerance for 7s!`;
     clueText = "Formula: Distance (cm) = Distance (dm) × 10. Do the conversion yourself! Tolerance: ±1 cm.";
@@ -178,7 +158,7 @@ function generateRound4Puzzle() {
   return {
     title: "STAGE 4: ULTRASONIC CONVERSION (7s STABLE HOLD)",
     question: questionText,
-    dialogue: "Convert the measurement to cm in your head! Position your hand at that exact distance (±1 cm) and hold steady for 7s.",
+    dialogue: "Convert measurement to cm in your head! Position your hand at that exact distance (±1 cm) and hold steady for 7s.",
     targetCm: targetCm,
     minDist: targetCm - 1,
     maxDist: targetCm + 1,
@@ -227,7 +207,6 @@ function showTreasureClearance() {
   if (!modal || !chest) return;
 
   modal.classList.remove("hidden");
-  setTimeout(() => modal.classList.add("active"), 50);
   chest.classList.remove("open");
   prompt.innerText = "TAP THE CHEST TO UNLOCK THE ANCIENT WISDOM";
   prompt.style.display = "block";
@@ -249,15 +228,11 @@ function showTreasureClearance() {
   };
 
   restartBtn.onclick = () => {
-    modal.classList.remove("active");
-    setTimeout(() => {
-      modal.classList.add("hidden");
-      loadStage(1);
-    }, 600);
+    modal.classList.add("hidden");
+    loadStage(1);
   };
 }
 
-// BUBBLE DROP TRANSITION BETWEEN ROUNDS
 function triggerBubbleDropTransition(nextStage) {
   let bubbleOverlay = document.getElementById("bubble-drop-overlay");
   
@@ -268,7 +243,6 @@ function triggerBubbleDropTransition(nextStage) {
     document.body.appendChild(bubbleOverlay);
   }
 
-  // Generate dropping bubble particles
   bubbleOverlay.innerHTML = "";
   for (let i = 0; i < 25; i++) {
     const bubble = document.createElement("div");
@@ -350,7 +324,6 @@ function checkAnswer() {
 function evaluateHardwareData(telemetry) {
   let cleanData = telemetry.replace(/[^\x20-\x7E]/g, '').trim();
 
-  // STAGE 1 & 3: Keypad Input
   if (currentRound === 1 || currentRound === 3) {
     if (cleanData.includes("KEY:")) {
       let val = cleanData.substring(cleanData.indexOf("KEY:") + 4).trim();
@@ -359,7 +332,6 @@ function evaluateHardwareData(telemetry) {
       checkAnswer();
     }
   } 
-  // STAGE 2: Touch Duration Equation (Strict Tolerance ±0.3s / 300ms)
   else if (currentRound === 2) {
     if (cleanData.includes("TOUCH_DURATION:")) {
       let dur = parseInt(cleanData.substring(cleanData.indexOf("TOUCH_DURATION:") + 15).trim());
@@ -376,19 +348,16 @@ function evaluateHardwareData(telemetry) {
       }
     }
   } 
-  // STAGE 4: Ultrasonic Sensor (Hidden Target cm in UI, ±1cm Tolerance & Hand Shake Mockery)
   else if (currentRound === 4) {
     if (cleanData.includes("DIST:")) {
       let dist = parseInt(cleanData.substring(cleanData.indexOf("DIST:") + 5).trim());
       document.getElementById("live-input").innerText = `${dist} cm`;
 
-      // Detect rapid hand tremor / shaking
       if (lastDistValue !== null && Math.abs(dist - lastDistValue) >= 3) {
         shakeCount++;
       }
       lastDistValue = dist;
 
-      // In target range (±1cm tolerance)
       if (dist >= currentPuzzle.minDist && dist <= currentPuzzle.maxDist) {
         if (!distHoldStart) {
           distHoldStart = Date.now();
