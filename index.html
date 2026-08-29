@@ -3,14 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Vault of Wisdom - Cyberpunk Terminal</title>
+  <title>Vault of Wisdom - Escape Box</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body data-theme="round1">
 
-  <!-- DIMENSIONAL PORTAL OVERLAY -->
   <div id="portal-overlay">
-    <div class="vortex-ring"></div>
     <div class="vortex-ring"></div>
     <div class="vortex-ring"></div>
     <div class="vortex-ring"></div>
@@ -18,18 +16,13 @@
   </div>
 
   <div class="container">
-    
-    <!-- TOP STATUS BAR -->
     <header class="terminal-card status-bar">
       <div><strong>HARDWARE:</strong> <span id="hardware-status" style="color: #ff4444;">● DISCONNECTED</span></div>
-      <div><strong>SYSTEM TIME:</strong> <span id="timer" class="accent-text">15:00</span></div>
+      <div><strong>SYSTEM TIME:</strong> <span class="accent-text">15:00</span></div>
       <div><strong>DIMENSION:</strong> <span id="stage-indicator" class="accent-text">ROUND 1 / 4</span></div>
     </header>
 
-    <!-- MAIN INTERACTION AREA -->
     <main class="game-grid">
-      
-      <!-- LEFT: Avatar & Dialogue -->
       <aside class="terminal-card avatar-panel slide-in-avatar" id="avatar-card">
         <div id="avatar-container">
           <svg width="100" height="100" viewBox="0 0 100 100" fill="none">
@@ -44,14 +37,11 @@
         <div id="dialogue-box">TAP THE CHEST TO OPEN 🏴‍☠️</div>
       </aside>
 
-      <!-- RIGHT: Active Puzzle, Chest Trigger, Clues & Buffer -->
       <section class="terminal-card puzzle-panel">
-        
-        <!-- INTERACTIVE VAULT CHEST -->
         <div class="chest-wrapper">
-          <div class="vault-door" id="vault-door">
-            <div class="door-panel door-left" id="door-left"></div>
-            <div class="door-panel door-right" id="door-right"></div>
+          <div class="vault-door" id="vault-door" style="cursor: pointer;">
+            <div class="door-panel door-left"></div>
+            <div class="door-panel door-right"></div>
             <div class="vault-lock-core" id="lock-core">TAP TO UNLOCK 🏴‍☠️</div>
           </div>
         </div>
@@ -59,7 +49,6 @@
         <h2 id="stage-title" class="accent-text">SYSTEM STANDBY</h2>
         <p id="puzzle-question">Connect hardware to initiate security protocols.</p>
 
-        <!-- CLUE / ADVICE PANEL -->
         <div class="advice-card">
           <div class="advice-header">
             <span class="advice-title">💡 ARIA'S HELP DESK</span>
@@ -68,13 +57,11 @@
           <p id="advice-text">Stuck on this stage? Click 💡 Request Clue if you need Aria's help!</p>
         </div>
 
-        <!-- Live Serial Buffer Display -->
         <div class="input-display">
           <small>LIVE HARDWARE BUFFER:</small>
           <div id="live-input" class="accent-text">_</div>
         </div>
 
-        <!-- Hidden Message Progress -->
         <div class="fragment-box">
           <small class="accent-text">DECRYPTED MESSAGE FRAGMENTS:</small>
           <div id="hidden-fragments">
@@ -85,7 +72,6 @@
           </div>
         </div>
       </section>
-
     </main>
   </div>
 
