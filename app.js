@@ -1,175 +1,131 @@
+let port, reader, writer;
+let currentRound = 1;
+let currentPuzzle = {};
+let currentAnswerBuffer = "";
+
 const ARIA_SCRIPT = {
-  boot: "TAP THE CHEST TO OPEN 🏴‍☠️",
-  intro: "Whoa, whoa, hold your horses! You didn't think opening the ancient Vault of Knowledge would be that easy, did you? I’m Aria, guardian of what's inside. Connect your USB device, and let's see what you've got!",
-  connected: "Signal locked and hardware initialized! Let's see if that brain of yours is running at full clock speed.",
-  failedConnect: "Connection dropped! Tap the chest and select your USB port!",
   mockery: {
-    wrongKeypad: "Wait... did you punch that in with your eyes closed? Try calculating that again, genius!",
-    guessing: "Ah, I see we're just pressing random numbers now. Bold strategy! Wrong, but bold.",
-    touchFail: "My clock module measured that timing and almost fell asleep. Give me clean, deliberate taps!",
-    stage4Fail: "Ouch! Stumbling right on the finish line? Steady your hand and try again!"
-  },
-  idle: {
-    1: "The vault's security protocols aren't getting any younger! You still figuring out the math over there?",
-    2: "The touch sensor module is right in front of you. Don't be shy, give it a tap!",
-    3: "Logic evaluation twisting your brain? Punch your answer into the keypad and hit #!",
-    4: "Hover your palm steady at the target range and let's move!"
-  },
-  victory: "Unbelievable! Calculated with absolute precision! You shattered all four heavy chains and unlocked the chest! Here is the secret wisdom stored inside:"
+    touchFail: "Timing missed! Keep steady pressure for the full duration.",
+    wrongKeypad: "Incorrect key entry! Math not matching up?"
+  }
 };
 
-// Complete Wisdom Database (250 entries)
-const WISDOM_DATABASE = [
-  "Do not mistake a busy life for a meaningful one. Learn to sit quietly with yourself.",
-  "You are not defined by the storms you walk through, but by how you rebuild.",
-  "The hardest battles you will ever fight will be inside your own mind.",
-  "You have power over your mind, not outside events. Adjust your sails.",
-  "Happiness is an internal state you cultivate while navigating chaos.",
-  "Stop looking for validation from people who don’t know what they want.",
-  "Anxiety is paying interest on a debt you may never owe.",
-  "We suffer far more often in imagination than in reality.",
-  "Comparison is the fastest way to kill your own joy.",
-  "The mind is a fertile garden; whatever you plant will grow in abundance.",
-  "Action cures fear. Take one small concrete physical step toward the problem.",
-  "How you do anything is how you do everything. Bring excellence to small tasks.",
-  "Financial security allows you to say 'no' to compromised ethics.",
-  "Be aggressively authentic. The world doesn't need a second-rate copy.",
-  "Integrity is doing the right thing when nobody will ever find out."
-];
-
-let currentRound = 1;
-let currentPuzzle = null;
-let idleTimer = null;
-let port = null;
-let writer = null;
-let reader = null;
-let walkStep = 0;
-
-// Procedural puzzle generators for 4 rounds
 function generateRound1Puzzle() {
-  const I = Math.floor(Math.random() * 8) + 2;
-  const R = Math.floor(Math.random() * 12) + 2;
-  const V = I * R;
+  const i = Math.floor(Math.random() * 5) + 2;
+  const r = Math.floor(Math.random() * 8) + 5;
   return {
     title: "STAGE 1: KEYPAD ENTRY (OHM'S LAW)",
-    question: `Calculate Voltage (V) for Current I = ${I}A and Resistance R = ${R} Ohms.`,
-    dialogue: `Stage 1 is live! Solve V = I × R for I=${I}A, R=${R}Ω. Punch your answer into the physical keypad followed by #!`,
-    clue: `Multiply current by resistance (${I} × ${R}). Key in '${V}' and hit '#'.`,
-    answer: String(V),
-    fragment: "FRAG_1: 'THE VAULT'"
+    question: `Calculate Voltage (V) for Current I = ${i}A and Resistance R = ${r} Ohms.`,
+    dialogue: `Stage 1 live! Calculate V = I * R for I=${i}A, R=${r}Ω. Punch your answer into the keypad or web box and click Check!`,
+    answer: i * r,
+    fragment: "VOLT"
   };
 }
 
 function generateRound2Puzzle() {
-  const sec = Math.floor(Math.random() * 3) + 2;
   return {
-    title: "STAGE 2: CAPACITIVE TOUCH TIMING",
-    question: `Hold the TTP223 capacitive touch sensor continuously for ${sec} seconds.`,
-    dialogue: `Look at you passing stage one! But this next lock requires rhythm. Hold the touch sensor for ${sec} full seconds!`,
-    clue: `Press down and hold until ${sec} seconds elapse.`,
-    targetHoldMs: sec * 1000,
-    answer: `HOLD_${sec}`,
-    fragment: "FRAG_2: 'HOLDS THE'"
+    title: "STAGE 2: TOUCH SENSOR TIMING",
+    question: "Touch and hold the metal sensor for exactly 3 seconds.",
+    dialogue: "Hold the sensor down! Release after 3 seconds.",
+    targetHoldMs: 3000,
+    fragment: "TIME"
   };
 }
 
 function generateRound3Puzzle() {
-  const exprs = [
-    { q: "(1 AND 0) OR (NOT 0)", a: "1", c: "(1 AND 0)=0. NOT 0=1. 0 OR 1 = 1." },
-    { q: "1 XOR 1", a: "0", c: "XOR returns 0 when both inputs are identical." },
-    { q: "NOT (1 AND 0)", a: "1", c: "1 AND 0 = 0. NOT(0) = 1." }
-  ];
-  const item = exprs[Math.floor(Math.random() * exprs.length)];
   return {
-    title: "STAGE 3: DIGITAL LOGIC EVALUATION",
-    question: `Evaluate: ${item.q}. Press 1 for True or 0 for False on the keypad, then hit #!`,
-    dialogue: `Time to test your boolean logic. Evaluate: ${item.q}. Key in 1 or 0 and press #!`,
-    clue: item.c,
-    answer: item.a,
-    fragment: "FRAG_3: 'FINAL KEY'"
+    title: "STAGE 3: LOGIC EVALUATION",
+    question: "Evaluate Binary Logic: (1 AND 1) OR (0 AND 1). Enter 1 for True, 0 for False.",
+    dialogue: "Boolean time! What does (1 AND 1) OR (0 AND 1) evaluate to?",
+    answer: 1,
+    fragment: "GATE"
   };
 }
 
 function generateRound4Puzzle() {
-  const targets = [
-    { min: 10, max: 13, text: "10cm - 13cm" },
-    { min: 18, max: 22, text: "18cm - 22cm" },
-    { min: 5, max: 8, text: "5cm - 8cm" }
-  ];
-  const t = targets[Math.floor(Math.random() * targets.length)];
   return {
-    title: "STAGE 4: ULTRASONIC DISTANCE LOCK",
-    question: `Hover your palm steady at target range: ${t.text}.`,
-    dialogue: `Final magical barrier! Hover your palm steady at ${t.text}!`,
-    clue: `Keep your hand positioned between ${t.text} from the ultrasonic eyes.`,
-    minDist: t.min,
-    maxDist: t.max,
-    answer: "DIST_VALID",
-    fragment: "FRAG_4: 'TO FREEDOM'"
+    title: "STAGE 4: ULTRASONIC DISTANCE",
+    question: "Place your hand at a distance between 10cm and 15cm from the sensor.",
+    dialogue: "Target depth range detected. Move your hand to 10-15cm away from the sonar.",
+    minDist: 10,
+    maxDist: 15,
+    fragment: "WAVE"
   };
 }
 
-// Walkpath Progression
-const walkpathScreen = document.getElementById("walkpath-screen");
-const chainedChest = document.getElementById("chained-chest");
-const walkpathPrompt = document.getElementById("walkpath-prompt");
-
-function stepForward() {
-  if (walkStep < 3) {
-    walkStep++;
-    if (walkStep === 1) {
-      chainedChest.className = "chest-distance-mid";
-      walkpathPrompt.innerText = "KEEP MOVING FORWARD... THE VAULT IS CLOSER!";
-    } else if (walkStep === 2) {
-      chainedChest.className = "chest-distance-near";
-      walkpathPrompt.innerText = "YOU ARE STANDING RIGHT BEFORE THE CHEST! TAP TO INSPECT!";
-    } else if (walkStep === 3) {
-      walkpathScreen.style.display = "none";
-      document.getElementById("dashboard-container").classList.remove("hidden");
-      document.getElementById("dialogue-box").innerText = ARIA_SCRIPT.intro;
-    }
-  }
-}
-
-document.addEventListener("keydown", (e) => { if (e.key === "w" || e.key === "W") stepForward(); });
-walkpathScreen.addEventListener("click", stepForward);
-
-document.getElementById("vault-door").addEventListener("click", () => {
-  if (!port) connectWebSerial();
-});
-
-document.getElementById("clue-btn").addEventListener("click", () => {
-  if (currentPuzzle) document.getElementById("advice-text").innerText = currentPuzzle.clue;
-});
-
-// Web Serial Driver
-async function connectWebSerial() {
-  if ("serial" in navigator) {
-    try {
-      port = await navigator.serial.requestPort();
-      await port.open({ baudRate: 9600 });
-
-      const textEncoder = new TextEncoderStream();
-      textEncoder.readable.pipeTo(port.writable);
-      writer = textEncoder.writable.getWriter();
-
-      document.getElementById("hardware-status").innerText = "● ONLINE";
-      document.getElementById("hardware-status").className = "status-online";
-      document.getElementById("dialogue-box").innerText = ARIA_SCRIPT.connected;
-      document.getElementById("clue-btn").removeAttribute("disabled");
-
-      setTimeout(() => { loadStage(1); }, 1200);
-      readSerialData();
-    } catch (err) {
-      document.getElementById("dialogue-box").innerText = ARIA_SCRIPT.failedConnect;
-    }
-  }
-}
-
-async function sendStageToHardware(stageNum) {
+function sendLCDText(line1, line2) {
   if (writer) {
-    await writer.write(`STAGE:${stageNum}\n`);
+    let safeL1 = line1.replace(/[^\x20-\x7E]/g, "").substring(0, 16);
+    let safeL2 = line2.replace(/[^\x20-\x7E]/g, "").substring(0, 16);
+    writer.write(`LCD:${safeL1}|${safeL2}\n`);
   }
+}
+
+function sendStageToHardware(stageNum) {
+  if (writer) {
+    writer.write(`STAGE:${stageNum}\n`);
+  }
+}
+
+function updateInputUI(value) {
+  currentAnswerBuffer = value;
+  const inputEl = document.getElementById("answer-input");
+  if (inputEl) inputEl.value = currentAnswerBuffer;
+
+  if (currentRound === 1 || currentRound === 3) {
+    sendLCDText(`STAGE ${currentRound}: ENTRY`, `> ${currentAnswerBuffer || "_____"}`);
+  }
+}
+
+function clearInput() {
+  updateInputUI("");
+  document.getElementById("dialogue-box").innerText = "Input cleared! Re-enter your answer.";
+  sendStageToHardware(currentRound);
+}
+
+function showTreasureClearance() {
+  const modal = document.getElementById("treasure-modal");
+  const chest = document.getElementById("treasure-chest");
+  const prompt = document.getElementById("chest-prompt");
+  const restartBtn = document.getElementById("restart-btn");
+
+  if (!modal || !chest) return;
+
+  modal.classList.remove("hidden");
+  setTimeout(() => modal.classList.add("active"), 50);
+  chest.classList.remove("open");
+  prompt.innerText = "TAP THE CHEST TO CLAIM THE WISDOM";
+  prompt.style.display = "block";
+  restartBtn.classList.add("hidden");
+
+  sendLCDText("VAULT UNLOCKED!", "WISDOM GRANTED");
+
+  chest.onclick = () => {
+    if (!chest.classList.contains("open")) {
+      chest.classList.add("open");
+      prompt.style.display = "none";
+      setTimeout(() => {
+        restartBtn.classList.remove("hidden");
+      }, 1200);
+    }
+  };
+
+  restartBtn.onclick = () => {
+    modal.classList.remove("active");
+    setTimeout(() => {
+      modal.classList.add("hidden");
+      loadStage(1);
+    }, 600);
+  };
+}
+
+function triggerPortalTransition(nextStage) {
+  if (nextStage > 4) {
+    document.getElementById("dialogue-box").innerText = "🎉 All vault security doors unlocked!";
+    showTreasureClearance();
+    return;
+  }
+  loadStage(nextStage);
 }
 
 function loadStage(stageNum) {
@@ -179,81 +135,65 @@ function loadStage(stageNum) {
   if (stageNum === 3) currentPuzzle = generateRound3Puzzle();
   if (stageNum === 4) currentPuzzle = generateRound4Puzzle();
 
-  // Dynamic Theme Switching
   document.body.setAttribute("data-theme", `round${stageNum}`);
-  
-  document.getElementById("stage-indicator").innerText = `ROUND ${stageNum} / 4`;
+  document.getElementById("stage-indicator").innerText = `STAGE: ROUND ${stageNum} / 4`;
   document.getElementById("stage-title").innerText = currentPuzzle.title;
   document.getElementById("puzzle-question").innerText = currentPuzzle.question;
   document.getElementById("dialogue-box").innerText = currentPuzzle.dialogue;
-  document.getElementById("advice-text").innerText = "Stuck on this stage? Click 💡 Request Clue if you need Aria's help!";
-  document.getElementById("live-input").innerText = "_";
 
   sendStageToHardware(stageNum);
-  resetIdleTimer();
+  updateInputUI("");
 }
 
-// Automatic Warp Portal Transition Engine
-function triggerPortalTransition(nextRound) {
-  clearTimeout(idleTimer);
-  const portal = document.getElementById("portal-overlay");
-  const portalText = document.getElementById("portal-text");
-  
-  portalText.innerText = nextRound <= 4 ? `ENTERING STAGE ${nextRound}...` : "UNLOCKING ANCIENT VAULT...";
-  portal.classList.add("active");
+function checkAnswer() {
+  const userVal = currentAnswerBuffer.trim();
 
-  setTimeout(() => {
-    if (nextRound > 4) {
-      const randomAdvice = WISDOM_DATABASE[Math.floor(Math.random() * WISDOM_DATABASE.length)];
-      document.getElementById("dialogue-box").innerText = `${ARIA_SCRIPT.victory}\n\n"${randomAdvice}"`;
-      document.getElementById("stage-title").innerText = "VAULT CLEARED!";
-      document.getElementById("puzzle-question").innerText = randomAdvice;
+  if (!userVal) {
+    document.getElementById("dialogue-box").innerText = "⚠️ Please enter a value before checking!";
+    return;
+  }
+
+  if (currentRound === 1 || currentRound === 3) {
+    if (userVal === String(currentPuzzle.answer)) {
+      document.getElementById(`frag-${currentRound}`).innerText = currentPuzzle.fragment;
+      updateInputUI("");
+      triggerPortalTransition(currentRound + 1);
     } else {
-      loadStage(nextRound);
-    }
-  }, 1200);
+      document.getElementById("dialogue-box").innerText = `❌ ${userVal} is incorrect! Resetting screen...`;
+      sendLCDText("INCORRECT VALUE!", "TRY AGAIN...");
 
-  setTimeout(() => {
-    portal.classList.remove("active");
-  }, 2400);
-}
-
-function resetIdleTimer() {
-  clearTimeout(idleTimer);
-  idleTimer = setTimeout(() => {
-    if (ARIA_SCRIPT.idle[currentRound]) {
-      document.getElementById("dialogue-box").innerText = ARIA_SCRIPT.idle[currentRound];
+      setTimeout(() => {
+        clearInput();
+      }, 1500);
     }
-  }, 30000);
+  }
 }
 
 function evaluateHardwareData(telemetry) {
-  resetIdleTimer();
-  document.getElementById("live-input").innerText = telemetry;
+  let cleanData = telemetry.replace(/[^\x20-\x7E]/g, '').trim();
+  document.getElementById("live-input").innerText = cleanData;
 
   if (currentRound === 1 || currentRound === 3) {
-    if (telemetry.startsWith("KEY:")) {
-      let val = telemetry.replace("KEY:", "").trim();
-      if (val === currentPuzzle.answer) {
-        document.getElementById(`frag-${currentRound}`).innerText = currentPuzzle.fragment;
-        triggerPortalTransition(currentRound + 1);
-      } else {
-        document.getElementById("dialogue-box").innerText = ARIA_SCRIPT.mockery.wrongKeypad;
-      }
+    if (cleanData.includes("KEY:")) {
+      let val = cleanData.substring(cleanData.indexOf("KEY:") + 4).trim();
+      updateInputUI(val);
+      checkAnswer();
     }
   } else if (currentRound === 2) {
-    if (telemetry.startsWith("TOUCH_DURATION:")) {
-      let dur = parseInt(telemetry.replace("TOUCH_DURATION:", "").trim());
+    if (cleanData.includes("TOUCH_DURATION:")) {
+      let dur = parseInt(cleanData.substring(cleanData.indexOf("TOUCH_DURATION:") + 15).trim());
       if (Math.abs(dur - currentPuzzle.targetHoldMs) < 900) {
         document.getElementById("frag-2").innerText = currentPuzzle.fragment;
         triggerPortalTransition(3);
       } else {
         document.getElementById("dialogue-box").innerText = ARIA_SCRIPT.mockery.touchFail;
+        sendLCDText("TIMING FAILED!", "TRY HOLDING AGAIN");
+        setTimeout(() => { sendStageToHardware(2); }, 1500);
       }
     }
   } else if (currentRound === 4) {
-    if (telemetry.startsWith("DIST:")) {
-      let dist = parseInt(telemetry.replace("DIST:", "").trim());
+    if (cleanData.includes("DIST:")) {
+      let dist = parseInt(cleanData.substring(cleanData.indexOf("DIST:") + 5).trim());
       if (dist >= currentPuzzle.minDist && dist <= currentPuzzle.maxDist) {
         document.getElementById("frag-4").innerText = currentPuzzle.fragment;
         triggerPortalTransition(5);
@@ -262,32 +202,54 @@ function evaluateHardwareData(telemetry) {
   }
 }
 
-async function readSerialData() {
-  const textDecoder = new TextDecoderStream();
-  port.readable.pipeTo(textDecoder.writable);
-  reader = textDecoder.readable.getReader();
-  let lineBuffer = "";
+async function connectSerial() {
+  try {
+    port = await navigator.serial.requestPort();
+    await port.open({ baudRate: 9600 });
 
-  while (true) {
-    const { value, done } = await reader.read();
-    if (done) break;
-    if (value) {
-      lineBuffer += value;
-      let lines = lineBuffer.split("\n");
-      lineBuffer = lines.pop();
+    const encoder = new TextEncoderStream();
+    encoder.readable.pipeTo(port.writable);
+    writer = encoder.writable.getWriter();
+
+    document.getElementById("connection-status").innerText = "• ONLINE";
+    document.getElementById("connection-status").className = "status-indicator online";
+
+    loadStage(1);
+
+    const decoder = new TextDecoderStream();
+    port.readable.pipeTo(decoder.writable);
+    reader = decoder.readable.getReader();
+
+    let buffer = "";
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buffer += value;
+      let lines = buffer.split("\n");
+      buffer = lines.pop();
       for (let line of lines) {
-        let clean = line.trim();
-        if (clean.length > 0) evaluateHardwareData(clean);
+        evaluateHardwareData(line);
       }
     }
+  } catch (err) {
+    console.error("Serial connection failed:", err);
   }
 }
 
-// Keyboard Bypass 'N' for testing
-document.addEventListener("keydown", (e) => {
-  if (e.key === "n" || e.key === "N") {
-    if (currentRound === 1 || currentRound === 3) evaluateHardwareData(`KEY:${currentPuzzle.answer}`);
-    if (currentRound === 2) evaluateHardwareData(`TOUCH_DURATION:${currentPuzzle.targetHoldMs}`);
-    if (currentRound === 4) evaluateHardwareData(`DIST:${currentPuzzle.minDist}`);
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("connect-btn").addEventListener("click", connectSerial);
+  document.getElementById("check-btn").addEventListener("click", checkAnswer);
+  document.getElementById("clear-btn").addEventListener("click", clearInput);
+
+  const answerInput = document.getElementById("answer-input");
+  if (answerInput) {
+    answerInput.addEventListener("input", (e) => {
+      updateInputUI(e.target.value);
+    });
+    answerInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") checkAnswer();
+    });
   }
+
+  loadStage(1);
 });
