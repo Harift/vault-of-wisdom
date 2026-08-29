@@ -12,9 +12,9 @@ const ARIA_SCRIPT = {
   },
   idle: {
     1: "The vault's security protocols aren't getting any younger! You still figuring out the math over there?",
-    2: "The touch sensor is right in front of you. Don't be shy, give it a tap!",
-    3: "Logic gates twisting your brain? Set those switches and let's move!",
-    4: "Are you measuring the distance with a ruler? Hover your hand and let's move!"
+    2: "The touch sensor module is right in front of you. Don't be shy, give it a tap!",
+    3: "Logic evaluation twisting your brain? Punch your answer into the keypad and hit #!",
+    4: "Are you measuring the distance with a ruler? Hover your hand at 15cm and let's move!"
   },
   victory: "Unbelievable! Calculated with absolute precision! You shattered all four heavy chains and unlocked the chest! You've earned every bit of this... here is the secret wisdom stored inside:"
 };
@@ -26,7 +26,7 @@ const STAGES = {
     title: "STAGE 1: KEYPAD ENTRY",
     question: "Calculate Voltage (V) when Current I = 5A and Resistance R = 12 Ohms.",
     dialogue: "Stage 1 is live! Punch your calculated answer into the physical keypad followed by # to lock it in!",
-    clue: "Stuck on the math? Fair enough! Here’s your lifeline: Use Ohm's Law (V = I × R). Multiply 5 by 12, then press #.",
+    clue: "Stuck on the math? Use Ohm's Law: V = I × R (5 × 12 = 60). Key in '60' and press '#'.",
     answer: "60",
     fragment: "FRAG_1: 'THE VAULT'"
   },
@@ -34,9 +34,9 @@ const STAGES = {
     theme: "round2",
     color: "#00FF66",
     title: "STAGE 2: TOUCH SENSOR TIMING",
-    question: "Touch nodes in binary sequence for number 3 (Node 1 + Node 2).",
-    dialogue: "Look at you, passing stage one like a natural! But don't get arrogant just yet... this next lock requires rhythm. Tap out the pattern on the touch sensor!",
-    clue: "Losing the rhythm? Here is the exact timing hint: Touch both GPIO 12 and 13 wires simultaneously.",
+    question: "Tap the physical TTP223 touch sensor module to send the signal.",
+    dialogue: "Look at you, passing stage one like a natural! But don't get arrogant just yet... tap out the pattern on your TTP223 touch sensor!",
+    clue: "Losing the rhythm? Press your finger cleanly against the TTP223 capacitive touch pad attached to GPIO 04.",
     answer: "TOUCH_3",
     fragment: "FRAG_2: 'HOLDS THE'"
   },
@@ -44,19 +44,19 @@ const STAGES = {
     theme: "round3",
     color: "#A855F7",
     title: "STAGE 3: DIGITAL LOGIC EVALUATION",
-    question: "Evaluate condition: Set Inputs A and B to HIGH (1,1) for AND Gate satisfaction.",
-    dialogue: "Fast fingers, decent reflexes... not bad! Time to test your boolean logic. Evaluate the circuit condition!",
-    clue: "Logic gates twisting your brain? Take a breather and look at this: Toggle both physical switches to GND / LOW.",
-    answer: "LOGIC_11",
+    question: "Evaluate Boolean Statement: (TRUE AND FALSE) OR (NOT FALSE). Press 1 for True or 0 for False, then hit #.",
+    dialogue: "Fast fingers, decent reflexes... not bad! Time to test your boolean logic. Evaluate the circuit condition and submit via keypad!",
+    clue: "Logic twisting your brain? (TRUE AND FALSE) = 0. (NOT FALSE) = 1. So 0 OR 1 = 1. Punch '1' and hit '#'.",
+    answer: "1",
     fragment: "FRAG_3: 'FINAL KEY'"
   },
   4: {
     theme: "round4",
     color: "#FFB800",
     title: "STAGE 4: ULTRASONIC DISTANCE LOCK",
-    dialogue: "Impressive! You're standing right at the final magical barrier. This one takes steady hands. Hover your palm steady at 15cm for 2 full seconds!",
-    question: "Maintain physical hand distance at 15 cm (Range: 14-16 cm).",
-    clue: "Hand shaking too much? Here’s how to position it: Hold your open hand flat 15cm directly in front of the HC-SR04 sensor.",
+    question: "Maintain physical hand distance at 15 cm from HC-SR04 (Target Range: 14-16 cm).",
+    dialogue: "Impressive! You're standing right at the final magical barrier. Hover your palm steady at 15cm for 2 full seconds!",
+    clue: "Hand shaking too much? Position your flat palm about 15cm (6 inches) away from the ultrasonic sensor eyes.",
     answer: "DIST_15",
     fragment: "FRAG_4: 'TO FREEDOM'"
   }
@@ -70,17 +70,13 @@ const QUOTES = [
 
 let currentRound = 1;
 let idleTimer = null;
-let isConnected = false;
+let port;
+let reader;
 
-// INITIAL CHEST CLICK HANDLER
 document.getElementById("vault-door").addEventListener("click", () => {
-  if (!isConnected) {
-    document.getElementById("dialogue-box").innerText = ARIA_SCRIPT.intro;
-    connectWebSerial();
-  }
+  if (!port) connectWebSerial();
 });
 
-// CLUE BUTTON HANDLER
 document.getElementById("clue-btn").addEventListener("click", () => {
   if (STAGES[currentRound]) {
     document.getElementById("advice-text").innerText = STAGES[currentRound].clue;
@@ -90,17 +86,16 @@ document.getElementById("clue-btn").addEventListener("click", () => {
 async function connectWebSerial() {
   if ("serial" in navigator) {
     try {
-      const port = await navigator.serial.requestPort();
+      port = await navigator.serial.requestPort();
       await port.open({ baudRate: 9600 });
       
-      isConnected = true;
       document.getElementById("hardware-status").innerText = "● ONLINE";
       document.getElementById("hardware-status").style.color = "#00ff66";
       document.getElementById("dialogue-box").innerText = ARIA_SCRIPT.connected;
       document.getElementById("clue-btn").removeAttribute("disabled");
 
-      setTimeout(() => { loadStage(1); }, 2000);
-      readSerialData(port);
+      setTimeout(() => { loadStage(1); }, 1500);
+      readSerialData();
     } catch (err) {
       document.getElementById("dialogue-box").innerText = ARIA_SCRIPT.failedConnect;
     }
@@ -130,7 +125,7 @@ function resetIdleTimer() {
     if (ARIA_SCRIPT.idle[currentRound]) {
       document.getElementById("dialogue-box").innerText = ARIA_SCRIPT.idle[currentRound];
     }
-  }, 30000); // 30-second idle tease
+  }, 30000);
 }
 
 function advanceToRound(nextRound) {
@@ -161,10 +156,7 @@ function advanceToRound(nextRound) {
       loadStage(nextRound);
     }, 1200);
 
-    setTimeout(() => {
-      portal.classList.remove("active");
-    }, 2500);
-
+    setTimeout(() => { portal.classList.remove("active"); }, 2500);
   }, 1000);
 }
 
@@ -178,17 +170,17 @@ function processHardwareInput(inputVal) {
     document.getElementById(`frag-${currentRound}`).style.color = currentStage.color;
     advanceToRound(currentRound + 1);
   } else {
-    // Failure & Mockery Trigger
     if (currentRound === 1) document.getElementById("dialogue-box").innerText = ARIA_SCRIPT.mockery.wrongKeypad;
     if (currentRound === 2) document.getElementById("dialogue-box").innerText = ARIA_SCRIPT.mockery.touchFail;
-    if (currentRound === 4) document.getElementById("dialogue-box").innerText = ARIA_SCRIPT.mockery.stage4Fail;
+    if (currentRound === 3) document.getElementById("dialogue-box").innerText = ARIA_SCRIPT.mockery.guessing;
+    if (currentRound === 4) document.getElementById("dialogue-box").innerText = ARIA_SCRIPT.mockery.wobble;
   }
 }
 
-async function readSerialData(port) {
+async function readSerialData() {
   const textDecoder = new TextDecoderStream();
   port.readable.pipeTo(textDecoder.writable);
-  const reader = textDecoder.readable.getReader();
+  reader = textDecoder.readable.getReader();
   let lineBuffer = "";
 
   while (true) {
