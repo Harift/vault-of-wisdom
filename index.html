@@ -7,8 +7,28 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body data-theme="round1">
+
+  <!-- BLACK THEMED OPENING TREASURE INTRO SEQUENCES -->
+  <div id="intro-modal" class="intro-modal">
+    <div class="intro-backdrop"></div>
+    <div class="intro-content">
+      <h1 class="intro-title">🔒 VAULT OF WISDOM</h1>
+      <p class="intro-subtitle">A.R.I.A. SECURITY MATRIX INITIALIZED</p>
+      
+      <div class="black-chest-container" id="black-intro-chest">
+        <div class="black-chest-lid">
+          <div class="black-lock">🔐</div>
+        </div>
+        <div class="black-chest-body">
+          <div class="black-glow"></div>
+        </div>
+      </div>
+
+      <button id="start-vault-btn" class="start-btn">INITIALIZE SECURITY CLEARANCE</button>
+    </div>
+  </div>
+
   <div class="dashboard-container">
-    
     <header class="status-bar">
       <div class="hw-status">
         HARDWARE: <span id="connection-status" class="status-indicator offline">• OFFLINE</span>
@@ -25,13 +45,13 @@
         <h2 class="ai-name">A.R.I.A.</h2>
         <p class="ai-title">Guardian AI</p>
         <div class="dialogue-box" id="dialogue-box">
-          The vault's security protocols aren't getting any younger! Solve the formula to continue.
+          Initializing security matrix... Stand by for calculation demands!
         </div>
       </section>
 
       <section class="right-panel">
         <div class="unlock-banner" id="unlock-banner">
-          <button class="unlock-btn">TAP TO UNLOCK 🔓</button>
+          <button class="unlock-btn">VAULT LEVEL ACTIVE 🔓</button>
         </div>
 
         <h1 class="stage-title" id="stage-title">STAGE 1: KEYPAD ENTRY (OHM'S LAW)</h1>
@@ -42,7 +62,7 @@
             <span>💡 ARIA'S HELP DESK</span>
             <button id="clue-btn" class="clue-btn">Request Clue</button>
           </div>
-          <p id="clue-text">Stuck on this stage? Click Request Clue if you need Aria's help!</p>
+          <p id="clue-text">Stuck on this stage? Click Request Clue to see formula guidance!</p>
         </div>
 
         <div class="telemetry-card">
@@ -67,18 +87,16 @@
         </div>
       </section>
     </div>
-
   </div>
 
-  <!-- TREASURE CHEST CLEARANCE MODAL -->
+  <!-- ANIMATED 3D ENDING TREASURE CHEST OVERLAY -->
   <div id="treasure-modal" class="treasure-modal hidden">
     <div class="treasure-backdrop"></div>
     <div class="treasure-stage">
-      <h1 class="victory-header">VAULT DECRYPTED</h1>
-      <p id="chest-prompt" class="chest-prompt">TAP THE CHEST TO CLAIM THE WISDOM</p>
+      <h1 class="victory-header">✨ VAULT DECRYPTED ✨</h1>
+      <p id="chest-prompt" class="chest-prompt">TAP THE CHEST TO UNLOCK THE ANCIENT WISDOM</p>
 
-      <div class="chest-wrapper" id="treasure-chest">
-        <!-- Text emerging from inside chest -->
+      <div class="chest-container" id="treasure-chest">
         <div class="wisdom-reveal" id="wisdom-reveal">
           <div class="wisdom-card">
             <span class="wisdom-badge">ANCIENT WISDOM UNLOCKED</span>
@@ -86,12 +104,13 @@
           </div>
         </div>
 
-        <!-- 3D Chest Structure -->
         <div class="chest-lid">
+          <div class="lid-band"></div>
           <div class="chest-lock" id="chest-lock">🔒</div>
         </div>
         <div class="chest-body">
           <div class="inner-gold-glow"></div>
+          <div class="chest-front-latch"></div>
         </div>
       </div>
 
