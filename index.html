@@ -3,43 +3,67 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Vault of Wisdom - Escape Box</title>
+  <title>Vault of Wisdom - Hardware Escape Box</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body data-theme="round1">
 
-  <div id="portal-overlay">
-    <div class="vortex-ring"></div>
-    <div class="vortex-ring"></div>
-    <div class="vortex-ring"></div>
-    <div class="portal-title" id="portal-text">SHIFTING DIMENSIONS...</div>
+  <!-- AAA Walkpath Entrance -->
+  <div id="walkpath-screen">
+    <div class="walkpath-canvas">
+      <div class="perspective-grid"></div>
+      <div id="chained-chest" class="chest-distance-far">
+        <div class="chest-chains">⛓️🔒⛓️</div>
+        <div class="chest-sprite">🏴‍☠️</div>
+      </div>
+    </div>
+    <div class="aaa-prompt-bar">
+      <span id="walkpath-prompt">MOVE FORWARD TO REACH CLOSER (CLICK OR PRESS 'W')</span>
+    </div>
   </div>
 
-  <div class="container">
+  <!-- Automatic Portal Transition Screen -->
+  <div id="portal-overlay">
+    <div class="portal-vortex">
+      <div class="ring ring-1"></div>
+      <div class="ring ring-2"></div>
+      <div class="ring ring-3"></div>
+      <div class="portal-core"></div>
+    </div>
+    <div class="portal-title" id="portal-text">WARPING THROUGH REALMS...</div>
+  </div>
+
+  <!-- Main Game Dashboard -->
+  <div class="container hidden" id="dashboard-container">
     <header class="terminal-card status-bar">
-      <div><strong>HARDWARE:</strong> <span id="hardware-status" style="color: #ff4444;">● DISCONNECTED</span></div>
-      <div><strong>SYSTEM TIME:</strong> <span class="accent-text">15:00</span></div>
-      <div><strong>DIMENSION:</strong> <span id="stage-indicator" class="accent-text">ROUND 1 / 4</span></div>
+      <div><strong>HARDWARE:</strong> <span id="hardware-status" class="status-offline">● DISCONNECTED</span></div>
+      <div><strong>STAGE:</strong> <span id="stage-indicator" class="accent-text">ROUND 1 / 4</span></div>
     </header>
 
     <main class="game-grid">
-      <aside class="terminal-card avatar-panel slide-in-avatar" id="avatar-card">
+      <!-- Aria Avatar & Custom Dialogue Box -->
+      <aside class="terminal-card avatar-panel">
         <div id="avatar-container">
-          <svg width="100" height="100" viewBox="0 0 100 100" fill="none">
-            <circle class="spinning-ring" cx="50" cy="50" r="45" stroke="var(--accent-main)" stroke-width="2" stroke-dasharray="4 2"/>
-            <polygon points="50,15 75,30 75,65 50,85 25,65 25,30" fill="rgba(0, 243, 255, 0.1)" stroke="var(--accent-main)" stroke-width="2"/>
+          <svg width="100" height="100" viewBox="0 0 100 100">
+            <circle class="spinning-ring" cx="50" cy="50" r="45" stroke="var(--accent-main)" stroke-width="2" fill="none" stroke-dasharray="4 2"/>
+            <polygon points="50,15 75,30 75,65 50,85 25,65 25,30" fill="var(--avatar-bg)" stroke="var(--accent-main)" stroke-width="2"/>
             <rect x="35" y="42" width="30" height="6" rx="3" fill="var(--accent-main)"/>
           </svg>
         </div>
         <h3 class="accent-text">A.R.I.A.</h3>
-        <p class="subtext">Vault Security Interface</p>
-        <hr class="divider">
-        <div id="dialogue-box">TAP THE CHEST TO OPEN 🏴‍☠️</div>
+        <p class="subtext">Guardian AI</p>
+        
+        <!-- Speech Bubble Container -->
+        <div class="aria-speech-bubble">
+          <div class="speech-arrow"></div>
+          <p id="dialogue-box">TAP THE CHEST TO OPEN 🏴‍☠️</p>
+        </div>
       </aside>
 
+      <!-- Puzzle Panel -->
       <section class="terminal-card puzzle-panel">
         <div class="chest-wrapper">
-          <div class="vault-door" id="vault-door" style="cursor: pointer;">
+          <div class="vault-door" id="vault-door">
             <div class="door-panel door-left"></div>
             <div class="door-panel door-right"></div>
             <div class="vault-lock-core" id="lock-core">TAP TO UNLOCK 🏴‍☠️</div>
@@ -47,7 +71,7 @@
         </div>
 
         <h2 id="stage-title" class="accent-text">SYSTEM STANDBY</h2>
-        <p id="puzzle-question">Connect hardware to initiate security protocols.</p>
+        <p id="puzzle-question">Connect hardware to initiate trials.</p>
 
         <div class="advice-card">
           <div class="advice-header">
@@ -58,7 +82,7 @@
         </div>
 
         <div class="input-display">
-          <small>LIVE HARDWARE BUFFER:</small>
+          <small>LIVE HARDWARE TELEMETRY:</small>
           <div id="live-input" class="accent-text">_</div>
         </div>
 
